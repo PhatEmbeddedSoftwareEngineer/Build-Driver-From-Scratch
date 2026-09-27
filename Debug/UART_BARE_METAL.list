@@ -1,0 +1,1177 @@
+
+UART_BARE_METAL.elf:     file format elf32-littlearm
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .isr_vector   00000194  08000000  08000000  00001000  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  1 .text         00000698  08000194  08000194  00001194  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  2 .rodata       00000010  0800082c  0800082c  0000182c  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  3 .ARM.extab    00000000  0800083c  0800083c  00001844  2**0
+                  CONTENTS, READONLY
+  4 .ARM          00000000  0800083c  0800083c  00001844  2**0
+                  CONTENTS, READONLY
+  5 .preinit_array 00000000  0800083c  08000844  00001844  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  6 .init_array   00000004  0800083c  0800083c  0000183c  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  7 .fini_array   00000004  08000840  08000840  00001840  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  8 .data         00000000  20000000  20000000  00001844  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  9 .bss          00000024  20000000  08000844  00002000  2**2
+                  ALLOC
+ 10 ._user_heap_stack 00000604  20000024  08000844  00002024  2**0
+                  ALLOC
+ 11 .ARM.attributes 00000030  00000000  00000000  00001844  2**0
+                  CONTENTS, READONLY
+ 12 .debug_info   0000122f  00000000  00000000  00001874  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 13 .debug_abbrev 0000060a  00000000  00000000  00002aa3  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 14 .debug_aranges 00000150  00000000  00000000  000030b0  2**3
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 15 .debug_rnglists 000000e7  00000000  00000000  00003200  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 16 .debug_macro  00000fc4  00000000  00000000  000032e7  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 17 .debug_line   000013ff  00000000  00000000  000042ab  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 18 .debug_str    0007e1a9  00000000  00000000  000056aa  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 19 .comment      00000043  00000000  00000000  00083853  2**0
+                  CONTENTS, READONLY
+ 20 .debug_frame  00000388  00000000  00000000  00083898  2**2
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 21 .debug_line_str 0000005e  00000000  00000000  00083c20  2**0
+                  CONTENTS, READONLY, DEBUGGING, OCTETS
+
+Disassembly of section .text:
+
+08000194 <__do_global_dtors_aux>:
+ 8000194:	b510      	push	{r4, lr}
+ 8000196:	4c05      	ldr	r4, [pc, #20]	@ (80001ac <__do_global_dtors_aux+0x18>)
+ 8000198:	7823      	ldrb	r3, [r4, #0]
+ 800019a:	b933      	cbnz	r3, 80001aa <__do_global_dtors_aux+0x16>
+ 800019c:	4b04      	ldr	r3, [pc, #16]	@ (80001b0 <__do_global_dtors_aux+0x1c>)
+ 800019e:	b113      	cbz	r3, 80001a6 <__do_global_dtors_aux+0x12>
+ 80001a0:	4804      	ldr	r0, [pc, #16]	@ (80001b4 <__do_global_dtors_aux+0x20>)
+ 80001a2:	f3af 8000 	nop.w
+ 80001a6:	2301      	movs	r3, #1
+ 80001a8:	7023      	strb	r3, [r4, #0]
+ 80001aa:	bd10      	pop	{r4, pc}
+ 80001ac:	20000000 	.word	0x20000000
+ 80001b0:	00000000 	.word	0x00000000
+ 80001b4:	08000814 	.word	0x08000814
+
+080001b8 <frame_dummy>:
+ 80001b8:	b508      	push	{r3, lr}
+ 80001ba:	4b03      	ldr	r3, [pc, #12]	@ (80001c8 <frame_dummy+0x10>)
+ 80001bc:	b11b      	cbz	r3, 80001c6 <frame_dummy+0xe>
+ 80001be:	4903      	ldr	r1, [pc, #12]	@ (80001cc <frame_dummy+0x14>)
+ 80001c0:	4803      	ldr	r0, [pc, #12]	@ (80001d0 <frame_dummy+0x18>)
+ 80001c2:	f3af 8000 	nop.w
+ 80001c6:	bd08      	pop	{r3, pc}
+ 80001c8:	00000000 	.word	0x00000000
+ 80001cc:	20000004 	.word	0x20000004
+ 80001d0:	08000814 	.word	0x08000814
+
+080001d4 <_ZN16DriverArmCotexM4L13timer_expiredEPjjjS0_>:
+            struct gpio *gpio = GPIO(PINBANK(pin));
+            gpio->BSRR = (1U << PINNO(pin)) << (val ? 0 : 16);
+        }
+    };
+
+    static bool timer_expired(uint32_t *t, uint32_t prd, uint32_t now, uint32_t* start) {
+ 80001d4:	b480      	push	{r7}
+ 80001d6:	b085      	sub	sp, #20
+ 80001d8:	af00      	add	r7, sp, #0
+ 80001da:	60f8      	str	r0, [r7, #12]
+ 80001dc:	60b9      	str	r1, [r7, #8]
+ 80001de:	607a      	str	r2, [r7, #4]
+ 80001e0:	603b      	str	r3, [r7, #0]
+   	
+        if (*t == 0) 
+ 80001e2:	68fb      	ldr	r3, [r7, #12]
+ 80001e4:	681b      	ldr	r3, [r3, #0]
+ 80001e6:	2b00      	cmp	r3, #0
+ 80001e8:	d107      	bne.n	80001fa <_ZN16DriverArmCotexM4L13timer_expiredEPjjjS0_+0x26>
+        {
+            *t = now + prd;
+ 80001ea:	687a      	ldr	r2, [r7, #4]
+ 80001ec:	68bb      	ldr	r3, [r7, #8]
+ 80001ee:	441a      	add	r2, r3
+ 80001f0:	68fb      	ldr	r3, [r7, #12]
+ 80001f2:	601a      	str	r2, [r3, #0]
+            *start = now;
+ 80001f4:	683b      	ldr	r3, [r7, #0]
+ 80001f6:	687a      	ldr	r2, [r7, #4]
+ 80001f8:	601a      	str	r2, [r3, #0]
+        }
+
+        if( ((uint32_t) (now - *start)) >= prd ) 
+ 80001fa:	683b      	ldr	r3, [r7, #0]
+ 80001fc:	681b      	ldr	r3, [r3, #0]
+ 80001fe:	687a      	ldr	r2, [r7, #4]
+ 8000200:	1ad3      	subs	r3, r2, r3
+ 8000202:	68ba      	ldr	r2, [r7, #8]
+ 8000204:	429a      	cmp	r2, r3
+ 8000206:	d81d      	bhi.n	8000244 <_ZN16DriverArmCotexM4L13timer_expiredEPjjjS0_+0x70>
+        {
+            if ( (now - *t) >= prd ) 
+ 8000208:	68fb      	ldr	r3, [r7, #12]
+ 800020a:	681b      	ldr	r3, [r3, #0]
+ 800020c:	687a      	ldr	r2, [r7, #4]
+ 800020e:	1ad3      	subs	r3, r2, r3
+ 8000210:	68ba      	ldr	r2, [r7, #8]
+ 8000212:	429a      	cmp	r2, r3
+ 8000214:	d808      	bhi.n	8000228 <_ZN16DriverArmCotexM4L13timer_expiredEPjjjS0_+0x54>
+            {
+                *t = now + prd ;
+ 8000216:	687a      	ldr	r2, [r7, #4]
+ 8000218:	68bb      	ldr	r3, [r7, #8]
+ 800021a:	441a      	add	r2, r3
+ 800021c:	68fb      	ldr	r3, [r7, #12]
+ 800021e:	601a      	str	r2, [r3, #0]
+                *start = now ;
+ 8000220:	683b      	ldr	r3, [r7, #0]
+ 8000222:	687a      	ldr	r2, [r7, #4]
+ 8000224:	601a      	str	r2, [r3, #0]
+ 8000226:	e00b      	b.n	8000240 <_ZN16DriverArmCotexM4L13timer_expiredEPjjjS0_+0x6c>
+            } 
+            else 
+            {
+                *t = *t + prd;
+ 8000228:	68fb      	ldr	r3, [r7, #12]
+ 800022a:	681a      	ldr	r2, [r3, #0]
+ 800022c:	68bb      	ldr	r3, [r7, #8]
+ 800022e:	441a      	add	r2, r3
+ 8000230:	68fb      	ldr	r3, [r7, #12]
+ 8000232:	601a      	str	r2, [r3, #0]
+                *start += prd;
+ 8000234:	683b      	ldr	r3, [r7, #0]
+ 8000236:	681a      	ldr	r2, [r3, #0]
+ 8000238:	68bb      	ldr	r3, [r7, #8]
+ 800023a:	441a      	add	r2, r3
+ 800023c:	683b      	ldr	r3, [r7, #0]
+ 800023e:	601a      	str	r2, [r3, #0]
+            }
+            return true;
+ 8000240:	2301      	movs	r3, #1
+ 8000242:	e000      	b.n	8000246 <_ZN16DriverArmCotexM4L13timer_expiredEPjjjS0_+0x72>
+        }
+        else return false;
+ 8000244:	2300      	movs	r3, #0
+    }
+ 8000246:	4618      	mov	r0, r3
+ 8000248:	3714      	adds	r7, #20
+ 800024a:	46bd      	mov	sp, r7
+ 800024c:	f85d 7b04 	ldr.w	r7, [sp], #4
+ 8000250:	4770      	bx	lr
+	...
+
+08000254 <SysTick_Handler>:
+#include "pollingUart.h"
+
+volatile uint32_t s_ticks = 0;
+extern "C" void SysTick_Handler(void)
+{   
+ 8000254:	b480      	push	{r7}
+ 8000256:	af00      	add	r7, sp, #0
+    s_ticks++;
+ 8000258:	4b04      	ldr	r3, [pc, #16]	@ (800026c <SysTick_Handler+0x18>)
+ 800025a:	681b      	ldr	r3, [r3, #0]
+ 800025c:	3301      	adds	r3, #1
+ 800025e:	4a03      	ldr	r2, [pc, #12]	@ (800026c <SysTick_Handler+0x18>)
+ 8000260:	6013      	str	r3, [r2, #0]
+}
+ 8000262:	bf00      	nop
+ 8000264:	46bd      	mov	sp, r7
+ 8000266:	f85d 7b04 	ldr.w	r7, [sp], #4
+ 800026a:	4770      	bx	lr
+ 800026c:	2000001c 	.word	0x2000001c
+
+08000270 <main>:
+
+DriverArmCotexM4::PollingUART uartPollingMode;
+
+int main(void)
+{
+ 8000270:	b590      	push	{r4, r7, lr}
+ 8000272:	b089      	sub	sp, #36	@ 0x24
+ 8000274:	af00      	add	r7, sp, #0
+	systick_init(16000000 / 1000); // 1ms tick
+ 8000276:	f44f 507a 	mov.w	r0, #16000	@ 0x3e80
+ 800027a:	f000 f8dd 	bl	8000438 <_Z12systick_initj>
+	uartPollingMode.uart_init(UART1, 115200);
+ 800027e:	f44f 32e1 	mov.w	r2, #115200	@ 0x1c200
+ 8000282:	491d      	ldr	r1, [pc, #116]	@ (80002f8 <main+0x88>)
+ 8000284:	481d      	ldr	r0, [pc, #116]	@ (80002fc <main+0x8c>)
+ 8000286:	f000 f949 	bl	800051c <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm>
+    uint32_t timer = 0, period = 500, start = 0;      // Declare timer and 500ms period
+ 800028a:	2300      	movs	r3, #0
+ 800028c:	617b      	str	r3, [r7, #20]
+ 800028e:	f44f 73fa 	mov.w	r3, #500	@ 0x1f4
+ 8000292:	61fb      	str	r3, [r7, #28]
+ 8000294:	2300      	movs	r3, #0
+ 8000296:	613b      	str	r3, [r7, #16]
+
+    char message[] = "Hello, Phat\n";  // Message to send
+ 8000298:	4b19      	ldr	r3, [pc, #100]	@ (8000300 <main+0x90>)
+ 800029a:	463c      	mov	r4, r7
+ 800029c:	cb0f      	ldmia	r3, {r0, r1, r2, r3}
+ 800029e:	c407      	stmia	r4!, {r0, r1, r2}
+ 80002a0:	7023      	strb	r3, [r4, #0]
+
+    while (1)
+    {
+        if (DriverArmCotexM4::timer_expired(&timer, period, s_ticks, &start))  // Check if timer expired
+ 80002a2:	4b18      	ldr	r3, [pc, #96]	@ (8000304 <main+0x94>)
+ 80002a4:	681a      	ldr	r2, [r3, #0]
+ 80002a6:	f107 0310 	add.w	r3, r7, #16
+ 80002aa:	f107 0014 	add.w	r0, r7, #20
+ 80002ae:	69f9      	ldr	r1, [r7, #28]
+ 80002b0:	f7ff ff90 	bl	80001d4 <_ZN16DriverArmCotexM4L13timer_expiredEPjjjS0_>
+ 80002b4:	4603      	mov	r3, r0
+ 80002b6:	2b00      	cmp	r3, #0
+ 80002b8:	d005      	beq.n	80002c6 <main+0x56>
+        {
+            uartPollingMode.uart_write_buf(UART1, message, sizeof(message) - 1);  // Send message
+ 80002ba:	463a      	mov	r2, r7
+ 80002bc:	230c      	movs	r3, #12
+ 80002be:	490e      	ldr	r1, [pc, #56]	@ (80002f8 <main+0x88>)
+ 80002c0:	480e      	ldr	r0, [pc, #56]	@ (80002fc <main+0x8c>)
+ 80002c2:	f000 f9e1 	bl	8000688 <_ZN16DriverArmCotexM411PollingUART14uart_write_bufEP4uartPch>
+        }
+
+        if(uartPollingMode.uart_read_ready(UART1))
+ 80002c6:	490c      	ldr	r1, [pc, #48]	@ (80002f8 <main+0x88>)
+ 80002c8:	480c      	ldr	r0, [pc, #48]	@ (80002fc <main+0x8c>)
+ 80002ca:	f000 f9fd 	bl	80006c8 <_ZN16DriverArmCotexM411PollingUART15uart_read_readyEP4uart>
+ 80002ce:	4603      	mov	r3, r0
+ 80002d0:	2b00      	cmp	r3, #0
+ 80002d2:	bf14      	ite	ne
+ 80002d4:	2301      	movne	r3, #1
+ 80002d6:	2300      	moveq	r3, #0
+ 80002d8:	b2db      	uxtb	r3, r3
+ 80002da:	2b00      	cmp	r3, #0
+ 80002dc:	d0e1      	beq.n	80002a2 <main+0x32>
+        {
+            uint8_t received_byte = uartPollingMode.uart_read_byte(UART1);  // Read received byte
+ 80002de:	4906      	ldr	r1, [pc, #24]	@ (80002f8 <main+0x88>)
+ 80002e0:	4806      	ldr	r0, [pc, #24]	@ (80002fc <main+0x8c>)
+ 80002e2:	f000 fa00 	bl	80006e6 <_ZN16DriverArmCotexM411PollingUART14uart_read_byteEP4uart>
+ 80002e6:	4603      	mov	r3, r0
+ 80002e8:	76fb      	strb	r3, [r7, #27]
+            uartPollingMode.uart_write_byte(UART1, received_byte);          // Echo back the received byte
+ 80002ea:	7efb      	ldrb	r3, [r7, #27]
+ 80002ec:	461a      	mov	r2, r3
+ 80002ee:	4902      	ldr	r1, [pc, #8]	@ (80002f8 <main+0x88>)
+ 80002f0:	4802      	ldr	r0, [pc, #8]	@ (80002fc <main+0x8c>)
+ 80002f2:	f000 f9ab 	bl	800064c <_ZN16DriverArmCotexM411PollingUART15uart_write_byteEP4uarth>
+        }
+
+    }
+ 80002f6:	e7d4      	b.n	80002a2 <main+0x32>
+ 80002f8:	40011000 	.word	0x40011000
+ 80002fc:	20000020 	.word	0x20000020
+ 8000300:	0800082c 	.word	0x0800082c
+ 8000304:	2000001c 	.word	0x2000001c
+
+08000308 <_ZN16DriverArmCotexM44GPIO13gpio_set_modeEth>:
+        static inline void gpio_set_mode(uint16_t pin, uint8_t mode) {
+ 8000308:	b480      	push	{r7}
+ 800030a:	b085      	sub	sp, #20
+ 800030c:	af00      	add	r7, sp, #0
+ 800030e:	4603      	mov	r3, r0
+ 8000310:	460a      	mov	r2, r1
+ 8000312:	80fb      	strh	r3, [r7, #6]
+ 8000314:	4613      	mov	r3, r2
+ 8000316:	717b      	strb	r3, [r7, #5]
+            struct gpio *gpio = GPIO(PINBANK(pin));  // GPIO bank
+ 8000318:	88fb      	ldrh	r3, [r7, #6]
+ 800031a:	0a1b      	lsrs	r3, r3, #8
+ 800031c:	b29b      	uxth	r3, r3
+ 800031e:	f503 1380 	add.w	r3, r3, #1048576	@ 0x100000
+ 8000322:	3380      	adds	r3, #128	@ 0x80
+ 8000324:	029b      	lsls	r3, r3, #10
+ 8000326:	60fb      	str	r3, [r7, #12]
+            int n = PINNO(pin);                      // Pin number
+ 8000328:	88fb      	ldrh	r3, [r7, #6]
+ 800032a:	b2db      	uxtb	r3, r3
+ 800032c:	60bb      	str	r3, [r7, #8]
+            RCC->AHB1ENR |= BIT(PINBANK(pin));       // Enable GPIO clock
+ 800032e:	4b14      	ldr	r3, [pc, #80]	@ (8000380 <_ZN16DriverArmCotexM44GPIO13gpio_set_modeEth+0x78>)
+ 8000330:	6b1a      	ldr	r2, [r3, #48]	@ 0x30
+ 8000332:	88fb      	ldrh	r3, [r7, #6]
+ 8000334:	0a1b      	lsrs	r3, r3, #8
+ 8000336:	b29b      	uxth	r3, r3
+ 8000338:	4619      	mov	r1, r3
+ 800033a:	2301      	movs	r3, #1
+ 800033c:	408b      	lsls	r3, r1
+ 800033e:	4910      	ldr	r1, [pc, #64]	@ (8000380 <_ZN16DriverArmCotexM44GPIO13gpio_set_modeEth+0x78>)
+ 8000340:	4313      	orrs	r3, r2
+ 8000342:	630b      	str	r3, [r1, #48]	@ 0x30
+            gpio->MODER &= ~(3U << (n * 2));         // Clear existing setting
+ 8000344:	68fb      	ldr	r3, [r7, #12]
+ 8000346:	681a      	ldr	r2, [r3, #0]
+ 8000348:	68bb      	ldr	r3, [r7, #8]
+ 800034a:	005b      	lsls	r3, r3, #1
+ 800034c:	2103      	movs	r1, #3
+ 800034e:	fa01 f303 	lsl.w	r3, r1, r3
+ 8000352:	43db      	mvns	r3, r3
+ 8000354:	401a      	ands	r2, r3
+ 8000356:	68fb      	ldr	r3, [r7, #12]
+ 8000358:	601a      	str	r2, [r3, #0]
+            gpio->MODER |= (mode & 3U) << (n * 2);   // Set new mode
+ 800035a:	68fb      	ldr	r3, [r7, #12]
+ 800035c:	681a      	ldr	r2, [r3, #0]
+ 800035e:	797b      	ldrb	r3, [r7, #5]
+ 8000360:	f003 0103 	and.w	r1, r3, #3
+ 8000364:	68bb      	ldr	r3, [r7, #8]
+ 8000366:	005b      	lsls	r3, r3, #1
+ 8000368:	fa01 f303 	lsl.w	r3, r1, r3
+ 800036c:	431a      	orrs	r2, r3
+ 800036e:	68fb      	ldr	r3, [r7, #12]
+ 8000370:	601a      	str	r2, [r3, #0]
+        }
+ 8000372:	bf00      	nop
+ 8000374:	3714      	adds	r7, #20
+ 8000376:	46bd      	mov	sp, r7
+ 8000378:	f85d 7b04 	ldr.w	r7, [sp], #4
+ 800037c:	4770      	bx	lr
+ 800037e:	bf00      	nop
+ 8000380:	40023800 	.word	0x40023800
+
+08000384 <_ZN16DriverArmCotexM44GPIO11gpio_set_afEth>:
+        static inline void gpio_set_af(uint16_t pin, uint8_t af_num) {
+ 8000384:	b480      	push	{r7}
+ 8000386:	b085      	sub	sp, #20
+ 8000388:	af00      	add	r7, sp, #0
+ 800038a:	4603      	mov	r3, r0
+ 800038c:	460a      	mov	r2, r1
+ 800038e:	80fb      	strh	r3, [r7, #6]
+ 8000390:	4613      	mov	r3, r2
+ 8000392:	717b      	strb	r3, [r7, #5]
+            struct gpio *gpio = GPIO(PINBANK(pin));  // GPIO bank
+ 8000394:	88fb      	ldrh	r3, [r7, #6]
+ 8000396:	0a1b      	lsrs	r3, r3, #8
+ 8000398:	b29b      	uxth	r3, r3
+ 800039a:	f503 1380 	add.w	r3, r3, #1048576	@ 0x100000
+ 800039e:	3380      	adds	r3, #128	@ 0x80
+ 80003a0:	029b      	lsls	r3, r3, #10
+ 80003a2:	60fb      	str	r3, [r7, #12]
+            int n = PINNO(pin);                      // Pin number
+ 80003a4:	88fb      	ldrh	r3, [r7, #6]
+ 80003a6:	b2db      	uxtb	r3, r3
+ 80003a8:	60bb      	str	r3, [r7, #8]
+            gpio->AFR[n >> 3] &= ~(15UL << ((n & 7) * 4));
+ 80003aa:	68bb      	ldr	r3, [r7, #8]
+ 80003ac:	10da      	asrs	r2, r3, #3
+ 80003ae:	68fb      	ldr	r3, [r7, #12]
+ 80003b0:	3208      	adds	r2, #8
+ 80003b2:	f853 1022 	ldr.w	r1, [r3, r2, lsl #2]
+ 80003b6:	68bb      	ldr	r3, [r7, #8]
+ 80003b8:	f003 0307 	and.w	r3, r3, #7
+ 80003bc:	009b      	lsls	r3, r3, #2
+ 80003be:	220f      	movs	r2, #15
+ 80003c0:	fa02 f303 	lsl.w	r3, r2, r3
+ 80003c4:	43db      	mvns	r3, r3
+ 80003c6:	68ba      	ldr	r2, [r7, #8]
+ 80003c8:	10d2      	asrs	r2, r2, #3
+ 80003ca:	4019      	ands	r1, r3
+ 80003cc:	68fb      	ldr	r3, [r7, #12]
+ 80003ce:	3208      	adds	r2, #8
+ 80003d0:	f843 1022 	str.w	r1, [r3, r2, lsl #2]
+            gpio->AFR[n >> 3] |= ((uint32_t) af_num) << ((n & 7) * 4);
+ 80003d4:	68bb      	ldr	r3, [r7, #8]
+ 80003d6:	10da      	asrs	r2, r3, #3
+ 80003d8:	68fb      	ldr	r3, [r7, #12]
+ 80003da:	3208      	adds	r2, #8
+ 80003dc:	f853 1022 	ldr.w	r1, [r3, r2, lsl #2]
+ 80003e0:	797a      	ldrb	r2, [r7, #5]
+ 80003e2:	68bb      	ldr	r3, [r7, #8]
+ 80003e4:	f003 0307 	and.w	r3, r3, #7
+ 80003e8:	009b      	lsls	r3, r3, #2
+ 80003ea:	fa02 f303 	lsl.w	r3, r2, r3
+ 80003ee:	68ba      	ldr	r2, [r7, #8]
+ 80003f0:	10d2      	asrs	r2, r2, #3
+ 80003f2:	4319      	orrs	r1, r3
+ 80003f4:	68fb      	ldr	r3, [r7, #12]
+ 80003f6:	3208      	adds	r2, #8
+ 80003f8:	f843 1022 	str.w	r1, [r3, r2, lsl #2]
+        }
+ 80003fc:	bf00      	nop
+ 80003fe:	3714      	adds	r7, #20
+ 8000400:	46bd      	mov	sp, r7
+ 8000402:	f85d 7b04 	ldr.w	r7, [sp], #4
+ 8000406:	4770      	bx	lr
+
+08000408 <_ZL4spinj>:
+#include "pollingUart.h"
+
+static inline void spin(volatile uint32_t count) {
+ 8000408:	b480      	push	{r7}
+ 800040a:	b083      	sub	sp, #12
+ 800040c:	af00      	add	r7, sp, #0
+ 800040e:	6078      	str	r0, [r7, #4]
+  while (count--) asm("nop");
+ 8000410:	e000      	b.n	8000414 <_ZL4spinj+0xc>
+ 8000412:	bf00      	nop
+ 8000414:	687b      	ldr	r3, [r7, #4]
+ 8000416:	1e5a      	subs	r2, r3, #1
+ 8000418:	607a      	str	r2, [r7, #4]
+ 800041a:	2b00      	cmp	r3, #0
+ 800041c:	bf14      	ite	ne
+ 800041e:	2301      	movne	r3, #1
+ 8000420:	2300      	moveq	r3, #0
+ 8000422:	b2db      	uxtb	r3, r3
+ 8000424:	2b00      	cmp	r3, #0
+ 8000426:	d1f4      	bne.n	8000412 <_ZL4spinj+0xa>
+}
+ 8000428:	bf00      	nop
+ 800042a:	bf00      	nop
+ 800042c:	370c      	adds	r7, #12
+ 800042e:	46bd      	mov	sp, r7
+ 8000430:	f85d 7b04 	ldr.w	r7, [sp], #4
+ 8000434:	4770      	bx	lr
+	...
+
+08000438 <_Z12systick_initj>:
+
+void systick_init(uint32_t ticks) 
+{
+ 8000438:	b480      	push	{r7}
+ 800043a:	b083      	sub	sp, #12
+ 800043c:	af00      	add	r7, sp, #0
+ 800043e:	6078      	str	r0, [r7, #4]
+  SYSTICK->LOAD = ticks - 1;
+ 8000440:	4a07      	ldr	r2, [pc, #28]	@ (8000460 <_Z12systick_initj+0x28>)
+ 8000442:	687b      	ldr	r3, [r7, #4]
+ 8000444:	3b01      	subs	r3, #1
+ 8000446:	6053      	str	r3, [r2, #4]
+  SYSTICK->VAL = 0;
+ 8000448:	4b05      	ldr	r3, [pc, #20]	@ (8000460 <_Z12systick_initj+0x28>)
+ 800044a:	2200      	movs	r2, #0
+ 800044c:	609a      	str	r2, [r3, #8]
+  SYSTICK->CTRL = BIT(0) | BIT(1) | BIT(2);  // Enable systick
+ 800044e:	4b04      	ldr	r3, [pc, #16]	@ (8000460 <_Z12systick_initj+0x28>)
+ 8000450:	2207      	movs	r2, #7
+ 8000452:	601a      	str	r2, [r3, #0]
+}
+ 8000454:	bf00      	nop
+ 8000456:	370c      	adds	r7, #12
+ 8000458:	46bd      	mov	sp, r7
+ 800045a:	f85d 7b04 	ldr.w	r7, [sp], #4
+ 800045e:	4770      	bx	lr
+ 8000460:	e000e010 	.word	0xe000e010
+
+08000464 <_ZN16DriverArmCotexM411PollingUART7isCarryEj>:
+
+uint32_t DriverArmCotexM4::PollingUART::isCarry(uint32_t frac)
+{
+ 8000464:	b480      	push	{r7}
+ 8000466:	b085      	sub	sp, #20
+ 8000468:	af00      	add	r7, sp, #0
+ 800046a:	6078      	str	r0, [r7, #4]
+ 800046c:	6039      	str	r1, [r7, #0]
+    uint32_t n = frac / 100;
+ 800046e:	683b      	ldr	r3, [r7, #0]
+ 8000470:	4a0c      	ldr	r2, [pc, #48]	@ (80004a4 <_ZN16DriverArmCotexM411PollingUART7isCarryEj+0x40>)
+ 8000472:	fba2 2303 	umull	r2, r3, r2, r3
+ 8000476:	095b      	lsrs	r3, r3, #5
+ 8000478:	60fb      	str	r3, [r7, #12]
+    return (frac % 100) > 50 ? (n + 1) : n;
+ 800047a:	683a      	ldr	r2, [r7, #0]
+ 800047c:	4b09      	ldr	r3, [pc, #36]	@ (80004a4 <_ZN16DriverArmCotexM411PollingUART7isCarryEj+0x40>)
+ 800047e:	fba3 1302 	umull	r1, r3, r3, r2
+ 8000482:	095b      	lsrs	r3, r3, #5
+ 8000484:	2164      	movs	r1, #100	@ 0x64
+ 8000486:	fb01 f303 	mul.w	r3, r1, r3
+ 800048a:	1ad3      	subs	r3, r2, r3
+ 800048c:	2b32      	cmp	r3, #50	@ 0x32
+ 800048e:	d902      	bls.n	8000496 <_ZN16DriverArmCotexM411PollingUART7isCarryEj+0x32>
+ 8000490:	68fb      	ldr	r3, [r7, #12]
+ 8000492:	3301      	adds	r3, #1
+ 8000494:	e000      	b.n	8000498 <_ZN16DriverArmCotexM411PollingUART7isCarryEj+0x34>
+ 8000496:	68fb      	ldr	r3, [r7, #12]
+}
+ 8000498:	4618      	mov	r0, r3
+ 800049a:	3714      	adds	r7, #20
+ 800049c:	46bd      	mov	sp, r7
+ 800049e:	f85d 7b04 	ldr.w	r7, [sp], #4
+ 80004a2:	4770      	bx	lr
+ 80004a4:	51eb851f 	.word	0x51eb851f
+
+080004a8 <_ZN16DriverArmCotexM411PollingUART7calBaudEPjjj>:
+
+uint32_t* DriverArmCotexM4::PollingUART::calBaud(uint32_t* buf, uint32_t baudrate, uint32_t fclk)
+{
+ 80004a8:	b580      	push	{r7, lr}
+ 80004aa:	b086      	sub	sp, #24
+ 80004ac:	af00      	add	r7, sp, #0
+ 80004ae:	60f8      	str	r0, [r7, #12]
+ 80004b0:	60b9      	str	r1, [r7, #8]
+ 80004b2:	607a      	str	r2, [r7, #4]
+ 80004b4:	603b      	str	r3, [r7, #0]
+    uint32_t mantissa = fclk/(baudrate*16);
+ 80004b6:	687b      	ldr	r3, [r7, #4]
+ 80004b8:	011b      	lsls	r3, r3, #4
+ 80004ba:	683a      	ldr	r2, [r7, #0]
+ 80004bc:	fbb2 f3f3 	udiv	r3, r2, r3
+ 80004c0:	617b      	str	r3, [r7, #20]
+    uint32_t fraction = ( ((fclk*100/(baudrate*16) ) ) %  (mantissa * 100) ) * 16;
+ 80004c2:	683b      	ldr	r3, [r7, #0]
+ 80004c4:	2264      	movs	r2, #100	@ 0x64
+ 80004c6:	fb03 f202 	mul.w	r2, r3, r2
+ 80004ca:	687b      	ldr	r3, [r7, #4]
+ 80004cc:	011b      	lsls	r3, r3, #4
+ 80004ce:	fbb2 f3f3 	udiv	r3, r2, r3
+ 80004d2:	697a      	ldr	r2, [r7, #20]
+ 80004d4:	2164      	movs	r1, #100	@ 0x64
+ 80004d6:	fb01 f202 	mul.w	r2, r1, r2
+ 80004da:	fbb3 f1f2 	udiv	r1, r3, r2
+ 80004de:	fb01 f202 	mul.w	r2, r1, r2
+ 80004e2:	1a9b      	subs	r3, r3, r2
+ 80004e4:	011b      	lsls	r3, r3, #4
+ 80004e6:	613b      	str	r3, [r7, #16]
+    
+    //std::cout << fraction;
+    fraction = isCarry(fraction);
+ 80004e8:	6939      	ldr	r1, [r7, #16]
+ 80004ea:	68f8      	ldr	r0, [r7, #12]
+ 80004ec:	f7ff ffba 	bl	8000464 <_ZN16DriverArmCotexM411PollingUART7isCarryEj>
+ 80004f0:	6138      	str	r0, [r7, #16]
+    
+    if(fraction > 15)
+ 80004f2:	693b      	ldr	r3, [r7, #16]
+ 80004f4:	2b0f      	cmp	r3, #15
+ 80004f6:	d904      	bls.n	8000502 <_ZN16DriverArmCotexM411PollingUART7calBaudEPjjj+0x5a>
+    {
+        mantissa += 1;
+ 80004f8:	697b      	ldr	r3, [r7, #20]
+ 80004fa:	3301      	adds	r3, #1
+ 80004fc:	617b      	str	r3, [r7, #20]
+        fraction = 0;
+ 80004fe:	2300      	movs	r3, #0
+ 8000500:	613b      	str	r3, [r7, #16]
+    }
+    //std::cout << fraction;
+    buf[0] = mantissa;
+ 8000502:	68bb      	ldr	r3, [r7, #8]
+ 8000504:	697a      	ldr	r2, [r7, #20]
+ 8000506:	601a      	str	r2, [r3, #0]
+    buf[1] = fraction;
+ 8000508:	68bb      	ldr	r3, [r7, #8]
+ 800050a:	3304      	adds	r3, #4
+ 800050c:	693a      	ldr	r2, [r7, #16]
+ 800050e:	601a      	str	r2, [r3, #0]
+    return buf;
+ 8000510:	68bb      	ldr	r3, [r7, #8]
+}
+ 8000512:	4618      	mov	r0, r3
+ 8000514:	3718      	adds	r7, #24
+ 8000516:	46bd      	mov	sp, r7
+ 8000518:	bd80      	pop	{r7, pc}
+	...
+
+0800051c <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm>:
+
+void DriverArmCotexM4::PollingUART::uart_init(struct uart *uart, unsigned long baud) {
+ 800051c:	b580      	push	{r7, lr}
+ 800051e:	b088      	sub	sp, #32
+ 8000520:	af00      	add	r7, sp, #0
+ 8000522:	60f8      	str	r0, [r7, #12]
+ 8000524:	60b9      	str	r1, [r7, #8]
+ 8000526:	607a      	str	r2, [r7, #4]
+  // datasheet DS_stm32f401re page 46 Table 9. Alternate function mapping (continued
+  uint8_t AF7 = 7;           // Alternate function
+ 8000528:	2307      	movs	r3, #7
+ 800052a:	76fb      	strb	r3, [r7, #27]
+  uint8_t AF8 = 8;           // Alternate function
+ 800052c:	2308      	movs	r3, #8
+ 800052e:	76bb      	strb	r3, [r7, #26]
+  uint16_t rx = 0, tx = 0;  // pins
+ 8000530:	2300      	movs	r3, #0
+ 8000532:	83fb      	strh	r3, [r7, #30]
+ 8000534:	2300      	movs	r3, #0
+ 8000536:	83bb      	strh	r3, [r7, #28]
+
+  if (uart == UART1) RCC->APB2ENR |= BIT(4);
+ 8000538:	68bb      	ldr	r3, [r7, #8]
+ 800053a:	4a3f      	ldr	r2, [pc, #252]	@ (8000638 <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0x11c>)
+ 800053c:	4293      	cmp	r3, r2
+ 800053e:	d105      	bne.n	800054c <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0x30>
+ 8000540:	4b3e      	ldr	r3, [pc, #248]	@ (800063c <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0x120>)
+ 8000542:	6c5b      	ldr	r3, [r3, #68]	@ 0x44
+ 8000544:	4a3d      	ldr	r2, [pc, #244]	@ (800063c <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0x120>)
+ 8000546:	f043 0310 	orr.w	r3, r3, #16
+ 800054a:	6453      	str	r3, [r2, #68]	@ 0x44
+  if (uart == UART2) RCC->APB1ENR |= BIT(17);
+ 800054c:	68bb      	ldr	r3, [r7, #8]
+ 800054e:	4a3c      	ldr	r2, [pc, #240]	@ (8000640 <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0x124>)
+ 8000550:	4293      	cmp	r3, r2
+ 8000552:	d105      	bne.n	8000560 <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0x44>
+ 8000554:	4b39      	ldr	r3, [pc, #228]	@ (800063c <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0x120>)
+ 8000556:	6c1b      	ldr	r3, [r3, #64]	@ 0x40
+ 8000558:	4a38      	ldr	r2, [pc, #224]	@ (800063c <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0x120>)
+ 800055a:	f443 3300 	orr.w	r3, r3, #131072	@ 0x20000
+ 800055e:	6413      	str	r3, [r2, #64]	@ 0x40
+  if (uart == UART6) RCC->APB2ENR |= BIT(5);
+ 8000560:	68bb      	ldr	r3, [r7, #8]
+ 8000562:	4a38      	ldr	r2, [pc, #224]	@ (8000644 <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0x128>)
+ 8000564:	4293      	cmp	r3, r2
+ 8000566:	d105      	bne.n	8000574 <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0x58>
+ 8000568:	4b34      	ldr	r3, [pc, #208]	@ (800063c <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0x120>)
+ 800056a:	6c5b      	ldr	r3, [r3, #68]	@ 0x44
+ 800056c:	4a33      	ldr	r2, [pc, #204]	@ (800063c <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0x120>)
+ 800056e:	f043 0320 	orr.w	r3, r3, #32
+ 8000572:	6453      	str	r3, [r2, #68]	@ 0x44
+
+  if (uart == UART1) tx = PIN('A', 9), rx = PIN('A', 10);
+ 8000574:	68bb      	ldr	r3, [r7, #8]
+ 8000576:	4a30      	ldr	r2, [pc, #192]	@ (8000638 <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0x11c>)
+ 8000578:	4293      	cmp	r3, r2
+ 800057a:	d103      	bne.n	8000584 <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0x68>
+ 800057c:	2309      	movs	r3, #9
+ 800057e:	83bb      	strh	r3, [r7, #28]
+ 8000580:	230a      	movs	r3, #10
+ 8000582:	83fb      	strh	r3, [r7, #30]
+  if (uart == UART2) tx = PIN('A', 2), rx = PIN('A', 3);
+ 8000584:	68bb      	ldr	r3, [r7, #8]
+ 8000586:	4a2e      	ldr	r2, [pc, #184]	@ (8000640 <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0x124>)
+ 8000588:	4293      	cmp	r3, r2
+ 800058a:	d103      	bne.n	8000594 <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0x78>
+ 800058c:	2302      	movs	r3, #2
+ 800058e:	83bb      	strh	r3, [r7, #28]
+ 8000590:	2303      	movs	r3, #3
+ 8000592:	83fb      	strh	r3, [r7, #30]
+  if (uart == UART6) tx = PIN('A', 11), rx = PIN('A', 12);
+ 8000594:	68bb      	ldr	r3, [r7, #8]
+ 8000596:	4a2b      	ldr	r2, [pc, #172]	@ (8000644 <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0x128>)
+ 8000598:	4293      	cmp	r3, r2
+ 800059a:	d103      	bne.n	80005a4 <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0x88>
+ 800059c:	230b      	movs	r3, #11
+ 800059e:	83bb      	strh	r3, [r7, #28]
+ 80005a0:	230c      	movs	r3, #12
+ 80005a2:	83fb      	strh	r3, [r7, #30]
+
+  GPIO::gpio_set_mode(tx, AF);
+ 80005a4:	8bbb      	ldrh	r3, [r7, #28]
+ 80005a6:	2102      	movs	r1, #2
+ 80005a8:	4618      	mov	r0, r3
+ 80005aa:	f7ff fead 	bl	8000308 <_ZN16DriverArmCotexM44GPIO13gpio_set_modeEth>
+  GPIO::gpio_set_mode(rx, AF);
+ 80005ae:	8bfb      	ldrh	r3, [r7, #30]
+ 80005b0:	2102      	movs	r1, #2
+ 80005b2:	4618      	mov	r0, r3
+ 80005b4:	f7ff fea8 	bl	8000308 <_ZN16DriverArmCotexM44GPIO13gpio_set_modeEth>
+  if (uart == UART1 || uart == UART2) {
+ 80005b8:	68bb      	ldr	r3, [r7, #8]
+ 80005ba:	4a1f      	ldr	r2, [pc, #124]	@ (8000638 <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0x11c>)
+ 80005bc:	4293      	cmp	r3, r2
+ 80005be:	d003      	beq.n	80005c8 <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0xac>
+ 80005c0:	68bb      	ldr	r3, [r7, #8]
+ 80005c2:	4a1f      	ldr	r2, [pc, #124]	@ (8000640 <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0x124>)
+ 80005c4:	4293      	cmp	r3, r2
+ 80005c6:	d10b      	bne.n	80005e0 <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0xc4>
+    GPIO::gpio_set_af(tx, AF7);
+ 80005c8:	7efa      	ldrb	r2, [r7, #27]
+ 80005ca:	8bbb      	ldrh	r3, [r7, #28]
+ 80005cc:	4611      	mov	r1, r2
+ 80005ce:	4618      	mov	r0, r3
+ 80005d0:	f7ff fed8 	bl	8000384 <_ZN16DriverArmCotexM44GPIO11gpio_set_afEth>
+    GPIO::gpio_set_af(rx, AF7);
+ 80005d4:	7efa      	ldrb	r2, [r7, #27]
+ 80005d6:	8bfb      	ldrh	r3, [r7, #30]
+ 80005d8:	4611      	mov	r1, r2
+ 80005da:	4618      	mov	r0, r3
+ 80005dc:	f7ff fed2 	bl	8000384 <_ZN16DriverArmCotexM44GPIO11gpio_set_afEth>
+  }
+  if (uart == UART6) {
+ 80005e0:	68bb      	ldr	r3, [r7, #8]
+ 80005e2:	4a18      	ldr	r2, [pc, #96]	@ (8000644 <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0x128>)
+ 80005e4:	4293      	cmp	r3, r2
+ 80005e6:	d10b      	bne.n	8000600 <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0xe4>
+    GPIO::gpio_set_af(tx, AF8);
+ 80005e8:	7eba      	ldrb	r2, [r7, #26]
+ 80005ea:	8bbb      	ldrh	r3, [r7, #28]
+ 80005ec:	4611      	mov	r1, r2
+ 80005ee:	4618      	mov	r0, r3
+ 80005f0:	f7ff fec8 	bl	8000384 <_ZN16DriverArmCotexM44GPIO11gpio_set_afEth>
+    GPIO::gpio_set_af(rx, AF8);
+ 80005f4:	7eba      	ldrb	r2, [r7, #26]
+ 80005f6:	8bfb      	ldrh	r3, [r7, #30]
+ 80005f8:	4611      	mov	r1, r2
+ 80005fa:	4618      	mov	r0, r3
+ 80005fc:	f7ff fec2 	bl	8000384 <_ZN16DriverArmCotexM44GPIO11gpio_set_afEth>
+  }
+
+  uart->CR1 = 0;                           // Disable this UART
+ 8000600:	68bb      	ldr	r3, [r7, #8]
+ 8000602:	2200      	movs	r2, #0
+ 8000604:	60da      	str	r2, [r3, #12]
+
+  uint32_t buf[2];
+  calBaud(buf, baud, FREQ);
+ 8000606:	f107 0110 	add.w	r1, r7, #16
+ 800060a:	4b0f      	ldr	r3, [pc, #60]	@ (8000648 <_ZN16DriverArmCotexM411PollingUART9uart_initEP4uartm+0x12c>)
+ 800060c:	687a      	ldr	r2, [r7, #4]
+ 800060e:	68f8      	ldr	r0, [r7, #12]
+ 8000610:	f7ff ff4a 	bl	80004a8 <_ZN16DriverArmCotexM411PollingUART7calBaudEPjjj>
+  uart->BRR = buf[0] << 4 | buf[1];  // Set baud rate
+ 8000614:	693b      	ldr	r3, [r7, #16]
+ 8000616:	011a      	lsls	r2, r3, #4
+ 8000618:	697b      	ldr	r3, [r7, #20]
+ 800061a:	431a      	orrs	r2, r3
+ 800061c:	68bb      	ldr	r3, [r7, #8]
+ 800061e:	609a      	str	r2, [r3, #8]
+  uart->CR1 |= BIT(13) | BIT(2) | BIT(3);  // Set UE, RE, TE
+ 8000620:	68bb      	ldr	r3, [r7, #8]
+ 8000622:	68db      	ldr	r3, [r3, #12]
+ 8000624:	f443 5300 	orr.w	r3, r3, #8192	@ 0x2000
+ 8000628:	f043 030c 	orr.w	r3, r3, #12
+ 800062c:	68ba      	ldr	r2, [r7, #8]
+ 800062e:	60d3      	str	r3, [r2, #12]
+}
+ 8000630:	bf00      	nop
+ 8000632:	3720      	adds	r7, #32
+ 8000634:	46bd      	mov	sp, r7
+ 8000636:	bd80      	pop	{r7, pc}
+ 8000638:	40011000 	.word	0x40011000
+ 800063c:	40023800 	.word	0x40023800
+ 8000640:	40004400 	.word	0x40004400
+ 8000644:	40011400 	.word	0x40011400
+ 8000648:	00f42400 	.word	0x00f42400
+
+0800064c <_ZN16DriverArmCotexM411PollingUART15uart_write_byteEP4uarth>:
+
+void DriverArmCotexM4::PollingUART::uart_write_byte(struct uart *uart, uint8_t byte) {
+ 800064c:	b580      	push	{r7, lr}
+ 800064e:	b084      	sub	sp, #16
+ 8000650:	af00      	add	r7, sp, #0
+ 8000652:	60f8      	str	r0, [r7, #12]
+ 8000654:	60b9      	str	r1, [r7, #8]
+ 8000656:	4613      	mov	r3, r2
+ 8000658:	71fb      	strb	r3, [r7, #7]
+  uart->DR = byte;
+ 800065a:	79fa      	ldrb	r2, [r7, #7]
+ 800065c:	68bb      	ldr	r3, [r7, #8]
+ 800065e:	605a      	str	r2, [r3, #4]
+  while ((uart->SR & BIT(7)) == 0) spin(1);
+ 8000660:	e002      	b.n	8000668 <_ZN16DriverArmCotexM411PollingUART15uart_write_byteEP4uarth+0x1c>
+ 8000662:	2001      	movs	r0, #1
+ 8000664:	f7ff fed0 	bl	8000408 <_ZL4spinj>
+ 8000668:	68bb      	ldr	r3, [r7, #8]
+ 800066a:	681b      	ldr	r3, [r3, #0]
+ 800066c:	f003 0380 	and.w	r3, r3, #128	@ 0x80
+ 8000670:	2b00      	cmp	r3, #0
+ 8000672:	bf0c      	ite	eq
+ 8000674:	2301      	moveq	r3, #1
+ 8000676:	2300      	movne	r3, #0
+ 8000678:	b2db      	uxtb	r3, r3
+ 800067a:	2b00      	cmp	r3, #0
+ 800067c:	d1f1      	bne.n	8000662 <_ZN16DriverArmCotexM411PollingUART15uart_write_byteEP4uarth+0x16>
+}
+ 800067e:	bf00      	nop
+ 8000680:	bf00      	nop
+ 8000682:	3710      	adds	r7, #16
+ 8000684:	46bd      	mov	sp, r7
+ 8000686:	bd80      	pop	{r7, pc}
+
+08000688 <_ZN16DriverArmCotexM411PollingUART14uart_write_bufEP4uartPch>:
+
+void DriverArmCotexM4::PollingUART::uart_write_buf(struct uart *uart, char *buf, uint8_t len) {
+ 8000688:	b580      	push	{r7, lr}
+ 800068a:	b084      	sub	sp, #16
+ 800068c:	af00      	add	r7, sp, #0
+ 800068e:	60f8      	str	r0, [r7, #12]
+ 8000690:	60b9      	str	r1, [r7, #8]
+ 8000692:	607a      	str	r2, [r7, #4]
+ 8000694:	70fb      	strb	r3, [r7, #3]
+  while (len-- > 0) uart_write_byte(uart, *(uint8_t *) buf++);
+ 8000696:	e008      	b.n	80006aa <_ZN16DriverArmCotexM411PollingUART14uart_write_bufEP4uartPch+0x22>
+ 8000698:	687b      	ldr	r3, [r7, #4]
+ 800069a:	1c5a      	adds	r2, r3, #1
+ 800069c:	607a      	str	r2, [r7, #4]
+ 800069e:	781b      	ldrb	r3, [r3, #0]
+ 80006a0:	461a      	mov	r2, r3
+ 80006a2:	68b9      	ldr	r1, [r7, #8]
+ 80006a4:	68f8      	ldr	r0, [r7, #12]
+ 80006a6:	f7ff ffd1 	bl	800064c <_ZN16DriverArmCotexM411PollingUART15uart_write_byteEP4uarth>
+ 80006aa:	78fb      	ldrb	r3, [r7, #3]
+ 80006ac:	1e5a      	subs	r2, r3, #1
+ 80006ae:	70fa      	strb	r2, [r7, #3]
+ 80006b0:	2b00      	cmp	r3, #0
+ 80006b2:	bf14      	ite	ne
+ 80006b4:	2301      	movne	r3, #1
+ 80006b6:	2300      	moveq	r3, #0
+ 80006b8:	b2db      	uxtb	r3, r3
+ 80006ba:	2b00      	cmp	r3, #0
+ 80006bc:	d1ec      	bne.n	8000698 <_ZN16DriverArmCotexM411PollingUART14uart_write_bufEP4uartPch+0x10>
+}
+ 80006be:	bf00      	nop
+ 80006c0:	bf00      	nop
+ 80006c2:	3710      	adds	r7, #16
+ 80006c4:	46bd      	mov	sp, r7
+ 80006c6:	bd80      	pop	{r7, pc}
+
+080006c8 <_ZN16DriverArmCotexM411PollingUART15uart_read_readyEP4uart>:
+
+
+uint32_t DriverArmCotexM4::PollingUART::uart_read_ready(struct uart *uart) {
+ 80006c8:	b480      	push	{r7}
+ 80006ca:	b083      	sub	sp, #12
+ 80006cc:	af00      	add	r7, sp, #0
+ 80006ce:	6078      	str	r0, [r7, #4]
+ 80006d0:	6039      	str	r1, [r7, #0]
+  return uart->SR & BIT(5);  // If RXNE bit is set, data is ready
+ 80006d2:	683b      	ldr	r3, [r7, #0]
+ 80006d4:	681b      	ldr	r3, [r3, #0]
+ 80006d6:	f003 0320 	and.w	r3, r3, #32
+}
+ 80006da:	4618      	mov	r0, r3
+ 80006dc:	370c      	adds	r7, #12
+ 80006de:	46bd      	mov	sp, r7
+ 80006e0:	f85d 7b04 	ldr.w	r7, [sp], #4
+ 80006e4:	4770      	bx	lr
+
+080006e6 <_ZN16DriverArmCotexM411PollingUART14uart_read_byteEP4uart>:
+
+uint8_t DriverArmCotexM4::PollingUART::uart_read_byte(struct uart *uart) {
+ 80006e6:	b480      	push	{r7}
+ 80006e8:	b083      	sub	sp, #12
+ 80006ea:	af00      	add	r7, sp, #0
+ 80006ec:	6078      	str	r0, [r7, #4]
+ 80006ee:	6039      	str	r1, [r7, #0]
+  return (uint8_t) (uart->DR & 255);
+ 80006f0:	683b      	ldr	r3, [r7, #0]
+ 80006f2:	685b      	ldr	r3, [r3, #4]
+ 80006f4:	b2db      	uxtb	r3, r3
+ 80006f6:	4618      	mov	r0, r3
+ 80006f8:	370c      	adds	r7, #12
+ 80006fa:	46bd      	mov	sp, r7
+ 80006fc:	f85d 7b04 	ldr.w	r7, [sp], #4
+ 8000700:	4770      	bx	lr
+
+08000702 <NMI_Handler>:
+/******************************************************************************/
+/**
+  * @brief This function handles Non maskable interrupt.
+  */
+void NMI_Handler(void)
+{
+ 8000702:	b480      	push	{r7}
+ 8000704:	af00      	add	r7, sp, #0
+  /* USER CODE BEGIN NonMaskableInt_IRQn 0 */
+
+  /* USER CODE END NonMaskableInt_IRQn 0 */
+  /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
+   while (1)
+ 8000706:	bf00      	nop
+ 8000708:	e7fd      	b.n	8000706 <NMI_Handler+0x4>
+
+0800070a <HardFault_Handler>:
+
+/**
+  * @brief This function handles Hard fault interrupt.
+  */
+void HardFault_Handler(void)
+{
+ 800070a:	b480      	push	{r7}
+ 800070c:	af00      	add	r7, sp, #0
+  /* USER CODE BEGIN HardFault_IRQn 0 */
+
+  /* USER CODE END HardFault_IRQn 0 */
+  while (1)
+ 800070e:	bf00      	nop
+ 8000710:	e7fd      	b.n	800070e <HardFault_Handler+0x4>
+
+08000712 <MemManage_Handler>:
+
+/**
+  * @brief This function handles Memory management fault.
+  */
+void MemManage_Handler(void)
+{
+ 8000712:	b480      	push	{r7}
+ 8000714:	af00      	add	r7, sp, #0
+  /* USER CODE BEGIN MemoryManagement_IRQn 0 */
+
+  /* USER CODE END MemoryManagement_IRQn 0 */
+  while (1)
+ 8000716:	bf00      	nop
+ 8000718:	e7fd      	b.n	8000716 <MemManage_Handler+0x4>
+
+0800071a <BusFault_Handler>:
+
+/**
+  * @brief This function handles Pre-fetch fault, memory access fault.
+  */
+void BusFault_Handler(void)
+{
+ 800071a:	b480      	push	{r7}
+ 800071c:	af00      	add	r7, sp, #0
+  /* USER CODE BEGIN BusFault_IRQn 0 */
+
+  /* USER CODE END BusFault_IRQn 0 */
+  while (1)
+ 800071e:	bf00      	nop
+ 8000720:	e7fd      	b.n	800071e <BusFault_Handler+0x4>
+
+08000722 <UsageFault_Handler>:
+
+/**
+  * @brief This function handles Undefined instruction or illegal state.
+  */
+void UsageFault_Handler(void)
+{
+ 8000722:	b480      	push	{r7}
+ 8000724:	af00      	add	r7, sp, #0
+  /* USER CODE BEGIN UsageFault_IRQn 0 */
+
+  /* USER CODE END UsageFault_IRQn 0 */
+  while (1)
+ 8000726:	bf00      	nop
+ 8000728:	e7fd      	b.n	8000726 <UsageFault_Handler+0x4>
+
+0800072a <SVC_Handler>:
+
+/**
+  * @brief This function handles System service call via SWI instruction.
+  */
+void SVC_Handler(void)
+{
+ 800072a:	b480      	push	{r7}
+ 800072c:	af00      	add	r7, sp, #0
+
+  /* USER CODE END SVCall_IRQn 0 */
+  /* USER CODE BEGIN SVCall_IRQn 1 */
+
+  /* USER CODE END SVCall_IRQn 1 */
+}
+ 800072e:	bf00      	nop
+ 8000730:	46bd      	mov	sp, r7
+ 8000732:	f85d 7b04 	ldr.w	r7, [sp], #4
+ 8000736:	4770      	bx	lr
+
+08000738 <DebugMon_Handler>:
+
+/**
+  * @brief This function handles Debug monitor.
+  */
+void DebugMon_Handler(void)
+{
+ 8000738:	b480      	push	{r7}
+ 800073a:	af00      	add	r7, sp, #0
+
+  /* USER CODE END DebugMonitor_IRQn 0 */
+  /* USER CODE BEGIN DebugMonitor_IRQn 1 */
+
+  /* USER CODE END DebugMonitor_IRQn 1 */
+}
+ 800073c:	bf00      	nop
+ 800073e:	46bd      	mov	sp, r7
+ 8000740:	f85d 7b04 	ldr.w	r7, [sp], #4
+ 8000744:	4770      	bx	lr
+
+08000746 <PendSV_Handler>:
+
+/**
+  * @brief This function handles Pendable request for system service.
+  */
+void PendSV_Handler(void)
+{
+ 8000746:	b480      	push	{r7}
+ 8000748:	af00      	add	r7, sp, #0
+
+  /* USER CODE END PendSV_IRQn 0 */
+  /* USER CODE BEGIN PendSV_IRQn 1 */
+
+  /* USER CODE END PendSV_IRQn 1 */
+}
+ 800074a:	bf00      	nop
+ 800074c:	46bd      	mov	sp, r7
+ 800074e:	f85d 7b04 	ldr.w	r7, [sp], #4
+ 8000752:	4770      	bx	lr
+
+08000754 <SystemInit>:
+  *         configuration.
+  * @param  None
+  * @retval None
+  */
+void SystemInit(void)
+{
+ 8000754:	b480      	push	{r7}
+ 8000756:	af00      	add	r7, sp, #0
+  /* FPU settings ------------------------------------------------------------*/
+  #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
+    SCB->CPACR |= ((3UL << 10*2)|(3UL << 11*2));  /* set CP10 and CP11 Full Access */
+ 8000758:	4b06      	ldr	r3, [pc, #24]	@ (8000774 <SystemInit+0x20>)
+ 800075a:	f8d3 3088 	ldr.w	r3, [r3, #136]	@ 0x88
+ 800075e:	4a05      	ldr	r2, [pc, #20]	@ (8000774 <SystemInit+0x20>)
+ 8000760:	f443 0370 	orr.w	r3, r3, #15728640	@ 0xf00000
+ 8000764:	f8c2 3088 	str.w	r3, [r2, #136]	@ 0x88
+
+  /* Configure the Vector Table location -------------------------------------*/
+#if defined(USER_VECT_TAB_ADDRESS)
+  SCB->VTOR = VECT_TAB_BASE_ADDRESS | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM */
+#endif /* USER_VECT_TAB_ADDRESS */
+}
+ 8000768:	bf00      	nop
+ 800076a:	46bd      	mov	sp, r7
+ 800076c:	f85d 7b04 	ldr.w	r7, [sp], #4
+ 8000770:	4770      	bx	lr
+ 8000772:	bf00      	nop
+ 8000774:	e000ed00 	.word	0xe000ed00
+
+08000778 <Reset_Handler>:
+
+    .section  .text.Reset_Handler
+  .weak  Reset_Handler
+  .type  Reset_Handler, %function
+Reset_Handler:  
+  ldr   sp, =_estack    		 /* set stack pointer */
+ 8000778:	f8df d034 	ldr.w	sp, [pc, #52]	@ 80007b0 <LoopFillZerobss+0xe>
+
+/* Call the clock system initialization function.*/
+  bl  SystemInit  
+ 800077c:	f7ff ffea 	bl	8000754 <SystemInit>
+
+/* Copy the data segment initializers from flash to SRAM */  
+  ldr r0, =_sdata
+ 8000780:	480c      	ldr	r0, [pc, #48]	@ (80007b4 <LoopFillZerobss+0x12>)
+  ldr r1, =_edata
+ 8000782:	490d      	ldr	r1, [pc, #52]	@ (80007b8 <LoopFillZerobss+0x16>)
+  ldr r2, =_sidata
+ 8000784:	4a0d      	ldr	r2, [pc, #52]	@ (80007bc <LoopFillZerobss+0x1a>)
+  movs r3, #0
+ 8000786:	2300      	movs	r3, #0
+  b LoopCopyDataInit
+ 8000788:	e002      	b.n	8000790 <LoopCopyDataInit>
+
+0800078a <CopyDataInit>:
+
+CopyDataInit:
+  ldr r4, [r2, r3]
+ 800078a:	58d4      	ldr	r4, [r2, r3]
+  str r4, [r0, r3]
+ 800078c:	50c4      	str	r4, [r0, r3]
+  adds r3, r3, #4
+ 800078e:	3304      	adds	r3, #4
+
+08000790 <LoopCopyDataInit>:
+
+LoopCopyDataInit:
+  adds r4, r0, r3
+ 8000790:	18c4      	adds	r4, r0, r3
+  cmp r4, r1
+ 8000792:	428c      	cmp	r4, r1
+  bcc CopyDataInit
+ 8000794:	d3f9      	bcc.n	800078a <CopyDataInit>
+  
+/* Zero fill the bss segment. */
+  ldr r2, =_sbss
+ 8000796:	4a0a      	ldr	r2, [pc, #40]	@ (80007c0 <LoopFillZerobss+0x1e>)
+  ldr r4, =_ebss
+ 8000798:	4c0a      	ldr	r4, [pc, #40]	@ (80007c4 <LoopFillZerobss+0x22>)
+  movs r3, #0
+ 800079a:	2300      	movs	r3, #0
+  b LoopFillZerobss
+ 800079c:	e001      	b.n	80007a2 <LoopFillZerobss>
+
+0800079e <FillZerobss>:
+
+FillZerobss:
+  str  r3, [r2]
+ 800079e:	6013      	str	r3, [r2, #0]
+  adds r2, r2, #4
+ 80007a0:	3204      	adds	r2, #4
+
+080007a2 <LoopFillZerobss>:
+
+LoopFillZerobss:
+  cmp r2, r4
+ 80007a2:	42a2      	cmp	r2, r4
+  bcc FillZerobss
+ 80007a4:	d3fb      	bcc.n	800079e <FillZerobss>
+ 
+/* Call static constructors */
+    bl __libc_init_array
+ 80007a6:	f000 f811 	bl	80007cc <__libc_init_array>
+/* Call the application's entry point.*/
+  bl  main
+ 80007aa:	f7ff fd61 	bl	8000270 <main>
+  bx  lr    
+ 80007ae:	4770      	bx	lr
+  ldr   sp, =_estack    		 /* set stack pointer */
+ 80007b0:	20018000 	.word	0x20018000
+  ldr r0, =_sdata
+ 80007b4:	20000000 	.word	0x20000000
+  ldr r1, =_edata
+ 80007b8:	20000000 	.word	0x20000000
+  ldr r2, =_sidata
+ 80007bc:	08000844 	.word	0x08000844
+  ldr r2, =_sbss
+ 80007c0:	20000000 	.word	0x20000000
+  ldr r4, =_ebss
+ 80007c4:	20000024 	.word	0x20000024
+
+080007c8 <ADC_IRQHandler>:
+ * @retval None       
+*/
+    .section  .text.Default_Handler,"ax",%progbits
+Default_Handler:
+Infinite_Loop:
+  b  Infinite_Loop
+ 80007c8:	e7fe      	b.n	80007c8 <ADC_IRQHandler>
+	...
+
+080007cc <__libc_init_array>:
+ 80007cc:	b570      	push	{r4, r5, r6, lr}
+ 80007ce:	4b0d      	ldr	r3, [pc, #52]	@ (8000804 <__libc_init_array+0x38>)
+ 80007d0:	4d0d      	ldr	r5, [pc, #52]	@ (8000808 <__libc_init_array+0x3c>)
+ 80007d2:	1b5b      	subs	r3, r3, r5
+ 80007d4:	109c      	asrs	r4, r3, #2
+ 80007d6:	2600      	movs	r6, #0
+ 80007d8:	42a6      	cmp	r6, r4
+ 80007da:	d109      	bne.n	80007f0 <__libc_init_array+0x24>
+ 80007dc:	f000 f81a 	bl	8000814 <_init>
+ 80007e0:	4d0a      	ldr	r5, [pc, #40]	@ (800080c <__libc_init_array+0x40>)
+ 80007e2:	4b0b      	ldr	r3, [pc, #44]	@ (8000810 <__libc_init_array+0x44>)
+ 80007e4:	1b5b      	subs	r3, r3, r5
+ 80007e6:	109c      	asrs	r4, r3, #2
+ 80007e8:	2600      	movs	r6, #0
+ 80007ea:	42a6      	cmp	r6, r4
+ 80007ec:	d105      	bne.n	80007fa <__libc_init_array+0x2e>
+ 80007ee:	bd70      	pop	{r4, r5, r6, pc}
+ 80007f0:	f855 3b04 	ldr.w	r3, [r5], #4
+ 80007f4:	4798      	blx	r3
+ 80007f6:	3601      	adds	r6, #1
+ 80007f8:	e7ee      	b.n	80007d8 <__libc_init_array+0xc>
+ 80007fa:	f855 3b04 	ldr.w	r3, [r5], #4
+ 80007fe:	4798      	blx	r3
+ 8000800:	3601      	adds	r6, #1
+ 8000802:	e7f2      	b.n	80007ea <__libc_init_array+0x1e>
+ 8000804:	0800083c 	.word	0x0800083c
+ 8000808:	0800083c 	.word	0x0800083c
+ 800080c:	0800083c 	.word	0x0800083c
+ 8000810:	08000840 	.word	0x08000840
+
+08000814 <_init>:
+ 8000814:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
+ 8000816:	bf00      	nop
+ 8000818:	bcf8      	pop	{r3, r4, r5, r6, r7}
+ 800081a:	bc08      	pop	{r3}
+ 800081c:	469e      	mov	lr, r3
+ 800081e:	4770      	bx	lr
+
+08000820 <_fini>:
+ 8000820:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
+ 8000822:	bf00      	nop
+ 8000824:	bcf8      	pop	{r3, r4, r5, r6, r7}
+ 8000826:	bc08      	pop	{r3}
+ 8000828:	469e      	mov	lr, r3
+ 800082a:	4770      	bx	lr
