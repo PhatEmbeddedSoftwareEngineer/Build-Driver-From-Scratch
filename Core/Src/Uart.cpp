@@ -1,5 +1,9 @@
 #include "Uart.h"
 
+volatile uint32_t DriverArmCotexM4::s_ticks = 0;
+char DriverArmCotexM4::message[] = "Hello, Phat\n";
+int DriverArmCotexM4::leng = sizeof(message) - 1;
+
 static inline void spin(volatile uint32_t count) {
   while (count--) asm("nop");
 }
@@ -69,6 +73,7 @@ void DriverArmCotexM4::DriverUART::uart_init(struct uart *uart, unsigned long ba
   uart->CR1 |= BIT(13) | BIT(2) | BIT(3);  // Set UE, RE, TE
   // enable UART interrupt handler
   //uart->CR1 |= BIT(7);  // Enable TXEIE Bit
+  enable_RXEIE();  // Enable RXEIE Bit
   NVIC_Enable(POSITION_USART1, 15);
 
 }
@@ -83,10 +88,32 @@ void DriverArmCotexM4::DriverUART::uart_write_buf(struct uart *uart, char *buf, 
 }
 
 
-uint32_t DriverArmCotexM4::DriverUART::uart_read_ready(struct uart *uart) {
+bool DriverArmCotexM4::DriverUART::uart_read_ready(struct uart *uart) {
   return uart->SR & BIT(5);  // If RXNE bit is set, data is ready
+}
+
+bool DriverArmCotexM4::DriverUART::uart_write_complete(struct uart *uart) {
+  return uart->SR & BIT(6);  // If TC bit is set, transmission is complete
 }
 
 uint8_t DriverArmCotexM4::DriverUART::uart_read_byte(struct uart *uart) {
   return (uint8_t) (uart->DR & 255);
+}
+
+void DriverArmCotexM4::DriverUART::disable_TXEIE() 
+{
+    UART1->CR1 &= ~BIT(7);  // Disable TXEIE Bit
+}
+void DriverArmCotexM4::DriverUART::enable_TXEIE() 
+{
+    UART1->CR1 |= BIT(7);  // Enable TXEIE Bit
+}
+
+void DriverArmCotexM4::DriverUART::disable_RXEIE() 
+{
+    UART1->CR1 &= ~BIT(5);  // Disable RXEIE Bit
+}
+void DriverArmCotexM4::DriverUART::enable_RXEIE() 
+{
+    UART1->CR1 |= BIT(5);  // Enable RXEIE Bit
 }

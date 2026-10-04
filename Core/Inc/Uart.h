@@ -5,6 +5,9 @@
 
 
 namespace DriverArmCotexM4 {
+    extern volatile uint32_t s_ticks ;
+    extern char message[13] ;
+    extern int leng ;
 
     enum GPIO_Mode_Type { INPUT, OUTPUT, AF, ANALOG };
     
@@ -87,9 +90,13 @@ namespace DriverArmCotexM4 {
         void uart_init(struct uart *uart, unsigned long baud);
         void uart_write_byte(struct uart *uart, uint8_t byte);
         void uart_write_buf(struct uart *uart, char *buf, uint8_t len);
-        uint32_t uart_read_ready(struct uart *uart);
+        bool uart_write_complete(struct uart *uart);
+        bool uart_read_ready(struct uart *uart);
         uint8_t uart_read_byte(struct uart *uart);
-
+        void disable_TXEIE();
+        void enable_TXEIE();
+        void disable_RXEIE();
+        void enable_RXEIE();
     };
 
 };
