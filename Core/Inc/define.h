@@ -34,4 +34,16 @@ struct uart {
 #define UART2 ((struct uart *) 0x40004400)
 #define UART6 ((struct uart *) 0x40011400)
 
+#define NVIC_BASE_ADDR	0xE000E100UL
+#define NVIC_PRIORITY_BASE 0xE000E400UL
+struct nvic_setPrio {
+	uint32_t IPRO[60];
+};
+
+struct nvic_setenable {
+	uint32_t ISER[8] ;
+};
+
+#define POSITION_USART1	37
+
 #endif // DEFINE_H

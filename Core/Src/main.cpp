@@ -1,12 +1,38 @@
-#include "pollingUart.h"
-
+#include "Uart.h"
+DriverArmCotexM4::DriverUART uartPollingMode;
 volatile uint32_t s_ticks = 0;
 extern "C" void SysTick_Handler(void)
 {   
     s_ticks++;
 }
 
-DriverArmCotexM4::PollingUART uartPollingMode;
+char message[] = "Hello, Phat\n";  // Message to send
+int leng = sizeof(message) - 1;  // Length of the message
+void disable_TXEIE() ;
+extern "C" void USART1_IRQHandler()
+{
+	static int cnt = 0; 
+    if(leng == cnt)
+    {
+        cnt = 0;
+        disable_TXEIE();  // Disable TXEIE Bit
+    }
+    else 
+    {
+        uartPollingMode.uart_write_byte(UART1, message[cnt++]);  // Send message
+    }
+    
+}
+
+void disable_TXEIE() 
+{
+    UART1->CR1 &= ~BIT(7);  // Disable TXEIE Bit
+}
+void enable_TXEIE() 
+{
+    UART1->CR1 |= BIT(7);  // Enable TXEIE Bit
+}
+
 
 int main(void)  
 {
@@ -14,13 +40,13 @@ int main(void)
 	uartPollingMode.uart_init(UART1, 115200);
     uint32_t timer = 0, period = 500, start = 0;      // Declare timer and 500ms period
 
-    char message[] = "Hello, Phat\n";  // Message to send
+    
 
     while (1)
     {
         if (DriverArmCotexM4::timer_expired(&timer, period, s_ticks, &start))  // Check if timer expired
         {
-            uartPollingMode.uart_write_buf(UART1, message, sizeof(message) - 1);  // Send message
+            enable_TXEIE();  // Enable TXEIE Bit to trigger USART1 interrupt
         }
 
         if(uartPollingMode.uart_read_ready(UART1))
