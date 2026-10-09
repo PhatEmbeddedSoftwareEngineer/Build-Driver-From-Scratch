@@ -71,10 +71,9 @@ void DriverArmCotexM4::DriverUART::uart_init(struct uart *uart, unsigned long ba
   calBaud(buf, baud, FREQ);
   uart->BRR = buf[0] << 4 | buf[1];  // Set baud rate
   uart->CR1 |= BIT(13) | BIT(2) | BIT(3);  // Set UE, RE, TE
-  // enable UART interrupt handler
-  //uart->CR1 |= BIT(7);  // Enable TXEIE Bit
-  enable_RXEIE();  // Enable RXEIE Bit
-  NVIC_Enable(POSITION_USART1, 15);
+  
+  if (uart == UART1) NVIC_Enable(POSITION_USART1, 15);
+  if (uart == UART2) NVIC_Enable(POSITION_USART2, 14);
 
 }
 
@@ -100,20 +99,23 @@ uint8_t DriverArmCotexM4::DriverUART::uart_read_byte(struct uart *uart) {
   return (uint8_t) (uart->DR & 255);
 }
 
-void DriverArmCotexM4::DriverUART::disable_TXEIE() 
+void DriverArmCotexM4::DriverUART::disable_TXEIE(struct uart *uart) 
 {
-    UART1->CR1 &= ~BIT(7);  // Disable TXEIE Bit
+    uart->CR1 &= ~BIT(7);  // Disable TXEIE Bit
 }
-void DriverArmCotexM4::DriverUART::enable_TXEIE() 
+void DriverArmCotexM4::DriverUART::enable_TXEIE(struct uart *uart) 
 {
-    UART1->CR1 |= BIT(7);  // Enable TXEIE Bit
+  if( ( uart->CR1 & BIT(7) ) == 0)  // Check if TXEIE Bit is not already set
+  {
+    uart->CR1 |= BIT(7);  // Enable TXEIE Bit
+  }
 }
 
-void DriverArmCotexM4::DriverUART::disable_RXEIE() 
+void DriverArmCotexM4::DriverUART::disable_RXEIE(struct uart *uart) 
 {
-    UART1->CR1 &= ~BIT(5);  // Disable RXEIE Bit
+    uart->CR1 &= ~BIT(5);  // Disable RXEIE Bit
 }
-void DriverArmCotexM4::DriverUART::enable_RXEIE() 
+void DriverArmCotexM4::DriverUART::enable_RXEIE(struct uart *uart) 
 {
-    UART1->CR1 |= BIT(5);  // Enable RXEIE Bit
+    uart->CR1 |= BIT(5);  // Enable RXEIE Bit
 }

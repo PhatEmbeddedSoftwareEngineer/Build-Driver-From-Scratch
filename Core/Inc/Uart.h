@@ -93,10 +93,10 @@ namespace DriverArmCotexM4 {
         bool uart_write_complete(struct uart *uart);
         bool uart_read_ready(struct uart *uart);
         uint8_t uart_read_byte(struct uart *uart);
-        void disable_TXEIE();
-        void enable_TXEIE();
-        void disable_RXEIE();
-        void enable_RXEIE();
+        void disable_TXEIE(struct uart *uart);
+        void enable_TXEIE(struct uart *uart);
+        void disable_RXEIE(struct uart *uart);
+        void enable_RXEIE(struct uart *uart);
     };
 
 };

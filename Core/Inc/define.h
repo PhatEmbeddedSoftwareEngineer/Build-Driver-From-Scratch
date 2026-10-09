@@ -45,5 +45,6 @@ struct nvic_setenable {
 };
 
 #define POSITION_USART1	37
+#define POSITION_USART2	38
 
 #endif // DEFINE_H
