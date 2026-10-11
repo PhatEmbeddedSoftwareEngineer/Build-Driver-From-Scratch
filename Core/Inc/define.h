@@ -14,6 +14,25 @@ typedef unsigned int uint32_t;
 #define PIN(bank, num) ((((bank) - 'A') << 8) | (num))
 #define PINNO(pin) (pin & 255)
 #define PINBANK(pin) (pin >> 8) // get GPIO
+#define DMA2_BASE_ADDR 0x40026400UL
+#define DMA1_BASE_ADDR 0x40026000UL
+
+struct DMA_Stream {
+    volatile uint32_t CR, NDTR, PAR, M0AR, M1AR, FCR;
+};
+
+struct DMA_Type
+{
+    volatile uint32_t LISR;   // 0x00
+    volatile uint32_t HISR;   // 0x04
+    volatile uint32_t LIFCR;  // 0x08
+    volatile uint32_t HIFCR;  // 0x0C
+
+    DMA_Stream STREAM[8];     //  0x10
+};
+
+#define DMA1 ((DMA_Type*)DMA1_BASE_ADDR)
+#define DMA2 ((DMA_Type*)DMA2_BASE_ADDR)
 
 struct systick {
     volatile uint32_t CTRL, LOAD, VAL, CALIB;
@@ -46,5 +65,6 @@ struct nvic_setenable {
 
 #define POSITION_USART1	37
 #define POSITION_USART2	38
+#define POSITION_DMA2_Stream7	70
 
 #endif // DEFINE_H

@@ -79,7 +79,7 @@ namespace DriverArmCotexM4 {
         struct nvic_setenable *nvic = (struct nvic_setenable *)NVIC_BASE_ADDR;
         struct nvic_setPrio *nvic_priority = (struct nvic_setPrio*)NVIC_PRIORITY_BASE;
         nvic->ISER[position / 32] |= (1 << (position % 32));
-        nvic_priority->IPRO[position / 4] = ((priority << 4) << ( (position % 4) * 8 ) );
+        nvic_priority->IPRO[position / 4] |= ((priority << 4) << ( (position % 4) * 8 ) );
     }
 
     class DriverUART { 
@@ -88,9 +88,13 @@ namespace DriverArmCotexM4 {
         uint32_t* calBaud(uint32_t* buf, uint32_t baudrate, uint32_t fclk);
     public:
         void uart_init(struct uart *uart, unsigned long baud);
-        void uart_write_byte(struct uart *uart, uint8_t byte);
+        void uart_dma2_init(struct uart *uart, uint32_t source, uint16_t length);
+        void uart_dma2_reTransmit(struct uart *uart, uint32_t source, uint16_t length);
+        void uart_write_byte_for_interrupt(struct uart *uart, uint8_t byte);
+        void uart_write_byte_for_polling(struct uart *uart, uint8_t byte);
         void uart_write_buf(struct uart *uart, char *buf, uint8_t len);
         bool uart_write_complete(struct uart *uart);
+        bool uart_write_ready(struct uart *uart);
         bool uart_read_ready(struct uart *uart);
         uint8_t uart_read_byte(struct uart *uart);
         void disable_TXEIE(struct uart *uart);
