@@ -84,8 +84,8 @@ all: main-build
 main-build: UART_BARE_METAL.elf secondary-outputs
 
 # Tool invocations
-UART_BARE_METAL.elf UART_BARE_METAL.map: $(OBJS) $(USER_OBJS) D:\register-programming-stm32f4\UART_BARE_METAL\STM32F401RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-g++ -o "UART_BARE_METAL.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"D:\register-programming-stm32f4\UART_BARE_METAL\STM32F401RETX_FLASH.ld" -Wl,-Map="UART_BARE_METAL.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
+UART_BARE_METAL.elf UART_BARE_METAL.map: $(OBJS) $(USER_OBJS) D:\register-programming-stm32f4\BUILD_DRIVER\STM32F401RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-g++ -o "UART_BARE_METAL.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"D:\register-programming-stm32f4\BUILD_DRIVER\STM32F401RETX_FLASH.ld" -Wl,-Map="UART_BARE_METAL.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
