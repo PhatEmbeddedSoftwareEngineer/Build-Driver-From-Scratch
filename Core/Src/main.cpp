@@ -9,7 +9,7 @@ extern "C" void SysTick_Handler(void)
 volatile uint8_t receivedByte = 0;
 extern "C" void USART1_IRQHandler()
 {
-	static int cnt = 0; 
+	static int cnt = 0;  
 
     if(uartPollingMode.uart_read_ready(UART1))  // Check if data is ready to be read
     {
