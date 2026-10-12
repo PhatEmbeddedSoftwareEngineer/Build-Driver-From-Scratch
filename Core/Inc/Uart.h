@@ -3,6 +3,7 @@
 
 #include "define.h"
 
+#define RECEIVE_DMA
 
 namespace DriverArmCotexM4 {
     extern volatile uint32_t s_ticks ;
@@ -88,7 +89,8 @@ namespace DriverArmCotexM4 {
         uint32_t* calBaud(uint32_t* buf, uint32_t baudrate, uint32_t fclk);
     public:
         void uart_init(struct uart *uart, unsigned long baud);
-        void uart_dma2_init(struct uart *uart, uint32_t source, uint16_t length);
+        void uart_dma2_init_tx(struct uart *uart, uint32_t source, uint16_t length);
+        void uart_dma2_init_rx(struct uart *uart, uint32_t destination, uint16_t length);
         void uart_dma2_reTransmit(struct uart *uart, uint32_t source, uint16_t length);
         void uart_write_byte_for_interrupt(struct uart *uart, uint8_t byte);
         void uart_write_byte_for_polling(struct uart *uart, uint8_t byte);

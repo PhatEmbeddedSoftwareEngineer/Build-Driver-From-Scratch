@@ -66,5 +66,6 @@ struct nvic_setenable {
 #define POSITION_USART1	37
 #define POSITION_USART2	38
 #define POSITION_DMA2_Stream7	70
+#define POSITION_DMA2_Stream5	68
 
 #endif // DEFINE_H

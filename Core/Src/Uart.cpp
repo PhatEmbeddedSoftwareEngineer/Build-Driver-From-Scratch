@@ -77,7 +77,7 @@ void DriverArmCotexM4::DriverUART::uart_init(struct uart *uart, unsigned long ba
 
 }
 
-void DriverArmCotexM4::DriverUART::uart_dma2_init(struct uart *uart, uint32_t source, uint16_t length)
+void DriverArmCotexM4::DriverUART::uart_dma2_init_tx(struct uart *uart, uint32_t source, uint16_t length)
 {
   RCC->AHB1ENR |= BIT(22);  // Enable DMA2 clock
   DMA2->STREAM[7].CR &= ~BIT(0);  // Disable DMA2 Stream 7
@@ -102,6 +102,37 @@ void DriverArmCotexM4::DriverUART::uart_dma2_init(struct uart *uart, uint32_t so
   uart->CR3 |= BIT(7);  // Enable DMA for transmission
 
   NVIC_Enable(POSITION_DMA2_Stream7, 13);
+}
+
+void DriverArmCotexM4::DriverUART::uart_dma2_init_rx(struct uart *uart, uint32_t source, uint16_t length)
+{
+  RCC->AHB1ENR |= BIT(22);  // Enable DMA2 clock
+  DMA2->STREAM[7].CR &= ~BIT(0);  // Disable DMA2 Stream 7
+  while (DMA2->STREAM[7].CR & BIT(0)) spin(1);  // Wait until DMA2 Stream 7 is disabled
+  DMA2->HIFCR = BIT(11); 
+  DMA2->HIFCR = BIT(10);
+  DMA2->HIFCR = BIT(9); 
+  DMA2->HIFCR = BIT(8);
+  DMA2->HIFCR = BIT(6);
+
+  DMA2->STREAM[5].PAR = (uint32_t) &uart->DR;  // Peripheral address
+  DMA2->STREAM[5].M0AR = source;  // Memory address
+  DMA2->STREAM[5].NDTR = length;  // Number of data items
+
+  DMA2->STREAM[5].CR |= BIT(27) ;
+  DMA2->STREAM[5].CR |= BIT(10) ;
+  DMA2->STREAM[5].CR |= BIT(8) ;
+  DMA2->STREAM[5].CR &= ~ BIT(7) ;
+  DMA2->STREAM[5].CR &= ~ BIT(6) ;
+  
+  DMA2->STREAM[5].CR |= BIT(4) ;
+  DMA2->STREAM[5].FCR = 0x00UL;  // Disable FIFO
+
+  DMA2->STREAM[5].CR |= BIT(0);
+
+  uart->CR3 |= BIT(6);  // Enable DMA for reception
+
+  NVIC_Enable(POSITION_DMA2_Stream5, 12);
 }
 
 void DriverArmCotexM4::DriverUART::uart_dma2_reTransmit(struct uart *uart, uint32_t source, uint16_t length)
