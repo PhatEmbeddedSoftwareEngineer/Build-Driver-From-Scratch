@@ -5,6 +5,7 @@
 
 #define RECEIVE_DMA
 
+
 namespace DriverArmCotexM4 {
     extern volatile uint32_t s_ticks ;
     extern char message[13] ;
@@ -15,7 +16,26 @@ namespace DriverArmCotexM4 {
     struct gpio {
         volatile uint32_t MODER, OTYPER, OSPEEDR, PUPDR, IDR, ODR, BSRR, LCKR, AFR[2];
     };
+    typedef struct {
+        uint8_t port;
+        uint32_t baudrate;
+    } uart_config_t;
 
+    typedef struct {
+        uint32_t ref_count;
+        uint32_t *Instance;
+    } uart_state_t;
+
+    typedef struct {
+        const uart_config_t *config;
+        void *state;
+    } devfs_handle_t;
+
+    struct uart *const uart_regs_table[MCU_UART_PORTS] = MCU_UART_REGS;
+
+    static int uart_enable_clock(uint8_t port) ;
+
+    int uart_local_open(const devfs_handle_t *handle);
     // RCC register map
     struct rcc {
         volatile uint32_t CR, PLLCFGR, CFGR, CIR, AHB1RSTR, AHB2RSTR, RESERVED[2],
@@ -82,11 +102,12 @@ namespace DriverArmCotexM4 {
         nvic->ISER[position / 32] |= (1 << (position % 32));
         nvic_priority->IPRO[position / 4] |= ((priority << 4) << ( (position % 4) * 8 ) );
     }
-
+    int cortexm_enable_irq(uint8_t port);
     class DriverUART { 
         
         uint32_t isCarry(uint32_t frac) ;
         uint32_t* calBaud(uint32_t* buf, uint32_t baudrate, uint32_t fclk);
+        
     public:
         void uart_init(struct uart *uart, unsigned long baud);
         void uart_dma2_init_tx(struct uart *uart, uint32_t source, uint16_t length);

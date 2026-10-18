@@ -8,6 +8,18 @@ static inline void spin(volatile uint32_t count) {
   while (count--) asm("nop");
 }
 
+static const DriverArmCotexM4::uart_config_t uart1_config = {
+    .port = PORT_UART1,
+    .baudrate = 115200
+};
+
+static DriverArmCotexM4::uart_state_t uart1_state = {0};
+
+static const DriverArmCotexM4::devfs_handle_t uart1_handle = {
+    .config = &uart1_config,
+    .state = &uart1_state
+};
+
 void systick_init(uint32_t ticks) 
 {
   SYSTICK->LOAD = ticks - 1;
@@ -46,7 +58,13 @@ void DriverArmCotexM4::DriverUART::uart_init(struct uart *uart, unsigned long ba
   uint8_t AF8 = 8;           // Alternate function
   uint16_t rx = 0, tx = 0;  // pins
 
-  if (uart == UART1) RCC->APB2ENR |= BIT(4);
+  int result = uart_local_open(&uart1_handle);
+
+  if (result != 0) {
+      return;
+  }
+
+  //if (uart == UART1) RCC->APB2ENR |= BIT(4);
   if (uart == UART2) RCC->APB1ENR |= BIT(17);
   if (uart == UART6) RCC->APB2ENR |= BIT(5);
 
@@ -72,7 +90,7 @@ void DriverArmCotexM4::DriverUART::uart_init(struct uart *uart, unsigned long ba
   uart->BRR = buf[0] << 4 | buf[1];  // Set baud rate
   uart->CR1 |= BIT(13) | BIT(2) | BIT(3);  // Set UE, RE, TE
   
-  if (uart == UART1) NVIC_Enable(POSITION_USART1, 15);
+  //if (uart == UART1) NVIC_Enable(POSITION_USART1, 15);
   if (uart == UART2) NVIC_Enable(POSITION_USART2, 14);
 
 }
@@ -196,4 +214,56 @@ void DriverArmCotexM4::DriverUART::disable_RXEIE(struct uart *uart)
 void DriverArmCotexM4::DriverUART::enable_RXEIE(struct uart *uart) 
 {
     uart->CR1 |= BIT(5);  // Enable RXEIE Bit
+}
+
+int DriverArmCotexM4::uart_local_open(const devfs_handle_t *handle)
+{
+    DEVFS_DRIVER_DECLARE_CONFIG_STATE(uart);
+    if (state->ref_count == 0) 
+    {
+      uart_enable_clock(config->port);
+      cortexm_enable_irq(config->port);
+    }
+    state->ref_count++;
+    return 0;
+}
+
+int DriverArmCotexM4::uart_enable_clock(uint8_t port)
+{
+    switch (port) {
+    case PORT_UART1:
+        RCC->APB2ENR |= BIT(4);
+        return 0;
+
+    case PORT_UART2:
+        RCC->APB1ENR |= BIT(17);
+        return 0;
+
+    case PORT_UART6:
+        RCC->APB2ENR |= BIT(5);
+        return 0;
+
+    default:
+        return -1;
+    }
+}
+
+int DriverArmCotexM4::cortexm_enable_irq(uint8_t port)
+{
+  switch (port) {
+    case PORT_UART1:
+        NVIC_Enable(POSITION_USART1, 15);
+        return 0;
+
+    case PORT_UART2:
+        NVIC_Enable(POSITION_USART2, 14);
+        return 0;
+
+    case PORT_UART6:
+        NVIC_Enable(POSITION_USART6, 13);
+        return 0;
+
+    default:
+        return -1;
+  }
 }

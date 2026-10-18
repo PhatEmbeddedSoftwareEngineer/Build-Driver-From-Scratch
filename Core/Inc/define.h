@@ -17,6 +17,11 @@ typedef unsigned int uint32_t;
 #define DMA2_BASE_ADDR 0x40026400UL
 #define DMA1_BASE_ADDR 0x40026000UL
 
+#define DEVFS_DRIVER_DECLARE_CONFIG_STATE(object)                                        \
+  const object##_config_t *config = handle->config;                                      \
+  object##_state_t *state = (object##_state_t *)handle->state
+
+
 struct DMA_Stream {
     volatile uint32_t CR, NDTR, PAR, M0AR, M1AR, FCR;
 };
@@ -49,9 +54,16 @@ struct uart {
     volatile uint32_t SR, DR, BRR, CR1, CR2, CR3, GTPR;
 };
 
+#define MCU_UART_PORTS 6
+
 #define UART1 ((struct uart *) 0x40011000)
 #define UART2 ((struct uart *) 0x40004400)
 #define UART6 ((struct uart *) 0x40011400)
+#define MCU_UART_REGS { UART1, UART2, 0, 0, 0, UART6 }
+#define PORT_UART1 0
+#define PORT_UART2 1
+#define PORT_UART6 5
+
 
 #define NVIC_BASE_ADDR	0xE000E100UL
 #define NVIC_PRIORITY_BASE 0xE000E400UL
@@ -65,6 +77,7 @@ struct nvic_setenable {
 
 #define POSITION_USART1	37
 #define POSITION_USART2	38
+#define POSITION_USART6	71
 #define POSITION_DMA2_Stream7	70
 #define POSITION_DMA2_Stream5	68
 
