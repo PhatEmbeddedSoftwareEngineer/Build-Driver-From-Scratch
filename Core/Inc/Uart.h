@@ -2,9 +2,13 @@
 #define UART_H
 
 #include "define.h"
-
+#include "fifo.h"
 #define RECEIVE_DMA
 
+#define UART1_TX_BUF_SIZE           1024
+#define UART1_RX_BUF_SIZE           1024
+#define	UART1_DMA_RX_BUF_SIZE		128
+#define	UART1_DMA_TX_BUF_SIZE		128
 
 namespace DriverArmCotexM4 {
     extern volatile uint32_t s_ticks ;
@@ -102,16 +106,52 @@ namespace DriverArmCotexM4 {
         nvic->ISER[position / 32] |= (1 << (position % 32));
         nvic_priority->IPRO[position / 4] |= ((priority << 4) << ( (position % 4) * 8 ) );
     }
+
+    inline void __disable_irq(void)
+    {
+        __asm volatile ("cpsid i" ::: "memory");
+    }
+
+    inline void __enable_irq(void)
+    {
+        __asm volatile ("cpsie i" ::: "memory");
+    }
+    
     int cortexm_enable_irq(uint8_t port);
     class DriverUART { 
         
         uint32_t isCarry(uint32_t frac) ;
         uint32_t* calBaud(uint32_t* buf, uint32_t baudrate, uint32_t fclk);
         
+        
+        typedef struct
+        {
+            uint8_t status;		
+            FIFO::_fifo_t tx_fifo;	
+            FIFO::_fifo_t rx_fifo;	
+            uint8_t *dmarx_buf;	
+            uint16_t dmarx_buf_size;
+            uint8_t *dmatx_buf;	
+            uint16_t dmatx_buf_size;
+            uint16_t last_dmarx_size;
+        }uart_device_t;
+
+        static uint8_t s_uart1_tx_buf[UART1_TX_BUF_SIZE];
+        static uint8_t s_uart1_rx_buf[UART1_RX_BUF_SIZE];
+        static uint8_t s_uart1_dmarx_buf[UART1_DMA_RX_BUF_SIZE] __attribute__((section(".ARM.__at_0x24000000")));
+        static uint8_t s_uart1_dmatx_buf[UART1_DMA_TX_BUF_SIZE] __attribute__((section(".ARM.__at_0x24000080")));
+
+        uart_device_t s_uart_dev[3] = {0}; // uart1, uart2, uart6
+        uint32_t s_UartTxRxCount[6] = {0}; // uart1, uart2, uart6
+
+        FIFO fifo;
+        
+
     public:
+        uint16_t bsp_uart1_get_dma2_stream5_rx_buf_remain_size(void) ;
         void uart_init(struct uart *uart, unsigned long baud);
-        void uart_dma2_init_tx(struct uart *uart, uint32_t source, uint16_t length);
-        void uart_dma2_init_rx(struct uart *uart, uint32_t destination, uint16_t length);
+        void uart_dma2_init_tx(struct uart *uart);
+        void uart_dma2_init_rx(struct uart *uart);
         void uart_dma2_reTransmit(struct uart *uart, uint32_t source, uint16_t length);
         void uart_write_byte_for_interrupt(struct uart *uart, uint8_t byte);
         void uart_write_byte_for_polling(struct uart *uart, uint8_t byte);
@@ -119,11 +159,25 @@ namespace DriverArmCotexM4 {
         bool uart_write_complete(struct uart *uart);
         bool uart_write_ready(struct uart *uart);
         bool uart_read_ready(struct uart *uart);
+        bool uart_read_idle(struct uart *uart);
+        bool is_uart_set_idle_isr(struct uart *uart);
+        uint32_t uart_read_register_status(struct uart *uart);
+        uint32_t uart_read_register_data(struct uart *uart);
         uint8_t uart_read_byte(struct uart *uart);
+        uint16_t uart1_get_dma2rx_remain_size(void);
+
         void disable_TXEIE(struct uart *uart);
         void enable_TXEIE(struct uart *uart);
         void disable_RXEIE(struct uart *uart);
         void enable_RXEIE(struct uart *uart);
+
+        uint16_t uart_write(uint8_t uart_id, const uint8_t *buf, uint16_t size);
+        uint16_t uart_read(uint8_t uart_id, uint8_t *buf, uint16_t size);
+        void uart_dmarx_done_isr(uint8_t uart_id);
+        void uart_dmarx_half_done_isr(uint8_t uart_id);
+        void uart_dmarx_idle_isr(uint8_t uart_id);
+        void uart_dmatx_done_isr(uint8_t uart_id);
+        void uart_poll_dma_tx(uint8_t uart_id);
     };
 
 };
