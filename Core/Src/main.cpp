@@ -119,3 +119,77 @@ int main(void)
     }
 
 }
+
+using init_function = void (*)(void);
+
+extern "C" {
+extern uint32_t _sbss, _ebss, _sdata, _edata, _sidata;
+extern void _estack(void);
+extern init_function __init_array_start[];
+extern init_function __init_array_end[];
+
+void initialize_memory(void)
+{
+    for (uint32_t *dst = &_sbss; dst < &_ebss; ++dst)
+    {
+        *dst = 0;
+    }
+
+    for (uint32_t *dst = &_sdata, *src = &_sidata; dst < &_edata;)
+    {
+        *dst++ = *src++;
+    }
+}
+
+void run_global_constructors(void)
+{
+    for (auto *function = __init_array_start;
+         function < __init_array_end; ++function)
+    {
+        (*function)();
+    }
+}
+
+__attribute__((naked, noreturn, used, section(".text.Reset_Handler")))
+void _reset(void)
+{
+    __asm volatile(
+        "ldr sp, =_estack\n"
+        "bl initialize_memory\n"
+        "bl run_global_constructors\n"
+        "bl main\n"
+        "1: b 1b\n");
+}
+
+void Default_Handler(void)
+{
+    while (1)
+    {
+    }
+}
+
+using vector_handler = void (*)(void);
+__attribute__((used, section(".vectors")))
+vector_handler const g_vectors[16 + 85] = {
+    &_estack, _reset, Default_Handler, Default_Handler, Default_Handler,
+    Default_Handler, Default_Handler, 0, 0, 0,
+    0, Default_Handler, Default_Handler, 0, Default_Handler,
+    SysTick_Handler, Default_Handler, Default_Handler, Default_Handler, Default_Handler,
+    Default_Handler, Default_Handler, Default_Handler, Default_Handler, Default_Handler,
+    Default_Handler, Default_Handler, Default_Handler, Default_Handler, Default_Handler,
+    Default_Handler, Default_Handler, Default_Handler, Default_Handler, Default_Handler,
+    0, 0, 0, 0, Default_Handler,
+    Default_Handler, Default_Handler, Default_Handler, Default_Handler, Default_Handler,
+    Default_Handler, Default_Handler, Default_Handler, Default_Handler, Default_Handler,
+    Default_Handler, Default_Handler, Default_Handler, USART1_IRQHandler, USART2_IRQHandler,
+    0, Default_Handler, Default_Handler, Default_Handler, 0,
+    0, 0, 0, Default_Handler, 0,
+    Default_Handler, Default_Handler, Default_Handler, 0, 0,
+    0, 0, Default_Handler, Default_Handler, Default_Handler,
+    Default_Handler, Default_Handler, 0, 0, 0,
+    0, 0, 0, Default_Handler, DMA2_Stream5_IRQHandler,
+    Default_Handler, DMA2_Stream7_IRQHandler, Default_Handler, Default_Handler, Default_Handler,
+    0, 0, 0, 0, 0,
+    0, 0, Default_Handler, 0, 0,
+    Default_Handler};
+}
