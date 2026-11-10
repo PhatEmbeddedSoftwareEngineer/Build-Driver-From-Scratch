@@ -171,25 +171,106 @@ void Default_Handler(void)
 using vector_handler = void (*)(void);
 __attribute__((used, section(".vectors")))
 vector_handler const g_vectors[16 + 85] = {
-    &_estack, _reset, Default_Handler, Default_Handler, Default_Handler,
-    Default_Handler, Default_Handler, 0, 0, 0,
-    0, Default_Handler, Default_Handler, 0, Default_Handler,
-    SysTick_Handler, Default_Handler, Default_Handler, Default_Handler, Default_Handler,
-    Default_Handler, Default_Handler, Default_Handler, Default_Handler, Default_Handler,
-    Default_Handler, Default_Handler, Default_Handler, Default_Handler, Default_Handler,
-    Default_Handler, Default_Handler, Default_Handler, Default_Handler, Default_Handler,
-    0, 0, 0, 0, Default_Handler,
-    Default_Handler, Default_Handler, Default_Handler, Default_Handler, Default_Handler,
-    Default_Handler, Default_Handler, Default_Handler, Default_Handler, Default_Handler,
-    Default_Handler, Default_Handler, Default_Handler, USART1_IRQHandler, USART2_IRQHandler,
-    0, Default_Handler, Default_Handler, Default_Handler, 0,
-    0, 0, 0, Default_Handler, 0,
-    Default_Handler, Default_Handler, Default_Handler, 0, 0,
-    0, 0, Default_Handler, Default_Handler, Default_Handler,
-    Default_Handler, Default_Handler, 0, 0, 0,
-    0, 0, 0, Default_Handler, DMA2_Stream5_IRQHandler,
-    Default_Handler, DMA2_Stream7_IRQHandler, Default_Handler, Default_Handler, Default_Handler,
-    0, 0, 0, 0, 0,
-    0, 0, Default_Handler, 0, 0,
-    Default_Handler};
+    &_estack,                 // Initial Stack Pointer
+    _reset,                   // Reset
+    Default_Handler,          // NMI
+    Default_Handler,          // HardFault
+    Default_Handler,          // MemManage
+    Default_Handler,          // BusFault
+    Default_Handler,          // UsageFault
+    0,                        // Reserved
+    0,                        // Reserved
+    0,                        // Reserved
+    0,                        // Reserved
+    Default_Handler,          // SVCall
+    Default_Handler,          // Debug Monitor
+    0,                        // Reserved
+    Default_Handler,          // PendSV
+    SysTick_Handler,          // SysTick
+    Default_Handler,          // WWDG
+    Default_Handler,          // PVD
+    Default_Handler,          // TAMP_STAMP
+    Default_Handler,          // RTC_WKUP
+    Default_Handler,          // FLASH
+    Default_Handler,          // RCC
+    Default_Handler,          // EXTI0
+    Default_Handler,          // EXTI1
+    Default_Handler,          // EXTI2
+    Default_Handler,          // EXTI3
+    Default_Handler,          // EXTI4
+    Default_Handler,          // DMA1_Stream0
+    Default_Handler,          // DMA1_Stream1
+    Default_Handler,          // DMA1_Stream2
+    Default_Handler,          // DMA1_Stream3
+    Default_Handler,          // DMA1_Stream4
+    Default_Handler,          // DMA1_Stream5
+    Default_Handler,          // DMA1_Stream6
+    Default_Handler,          // ADC
+    0,                        // Reserved IRQ 19
+    0,                        // Reserved IRQ 20
+    0,                        // Reserved IRQ 21
+    0,                        // Reserved IRQ 22
+    Default_Handler,          // EXTI9_5
+    Default_Handler,          // TIM1_BRK_TIM9
+    Default_Handler,          // TIM1_UP_TIM10
+    Default_Handler,          // TIM1_TRG_COM_TIM11
+    Default_Handler,          // TIM1_CC
+    Default_Handler,          // TIM2
+    Default_Handler,          // TIM3
+    Default_Handler,          // TIM4
+    Default_Handler,          // I2C1_EV
+    Default_Handler,          // I2C1_ER
+    Default_Handler,          // I2C2_EV
+    Default_Handler,          // I2C2_ER
+    Default_Handler,          // SPI1
+    Default_Handler,          // SPI2
+    USART1_IRQHandler,        // USART1
+    USART2_IRQHandler,        // USART2
+    0,                        // Reserved IRQ 39
+    Default_Handler,          // EXTI15_10
+    Default_Handler,          // RTC_Alarm
+    Default_Handler,          // OTG_FS_WKUP
+    0,                        // Reserved IRQ 43
+    0,                        // Reserved IRQ 44
+    0,                        // Reserved IRQ 45
+    0,                        // Reserved IRQ 46
+    Default_Handler,          // DMA1_Stream7
+    0,                        // Reserved IRQ 48
+    Default_Handler,          // SDIO
+    Default_Handler,          // TIM5
+    Default_Handler,          // SPI3
+    0,                        // Reserved IRQ 52
+    0,                        // Reserved IRQ 53
+    0,                        // Reserved IRQ 54
+    0,                        // Reserved IRQ 55
+    Default_Handler,          // DMA2_Stream0
+    Default_Handler,          // DMA2_Stream1
+    Default_Handler,          // DMA2_Stream2
+    Default_Handler,          // DMA2_Stream3
+    Default_Handler,          // DMA2_Stream4
+    0,                        // Reserved IRQ 61
+    0,                        // Reserved IRQ 62
+    0,                        // Reserved IRQ 63
+    0,                        // Reserved IRQ 64
+    0,                        // Reserved IRQ 65
+    0,                        // Reserved IRQ 66
+    Default_Handler,          // OTG_FS
+    DMA2_Stream5_IRQHandler,  // DMA2_Stream5
+    Default_Handler,          // DMA2_Stream6
+    DMA2_Stream7_IRQHandler,  // DMA2_Stream7
+    Default_Handler,          // USART6
+    Default_Handler,          // I2C3_EV
+    Default_Handler,          // I2C3_ER
+    0,                        // Reserved IRQ 74
+    0,                        // Reserved IRQ 75
+    0,                        // Reserved IRQ 76
+    0,                        // Reserved IRQ 77
+    0,                        // Reserved IRQ 78
+    0,                        // Reserved IRQ 79
+    0,                        // Reserved IRQ 80
+    Default_Handler,          // FPU
+    0,                        // Reserved IRQ 82
+    0,                        // Reserved IRQ 83
+    Default_Handler           // SPI4
+};
 }

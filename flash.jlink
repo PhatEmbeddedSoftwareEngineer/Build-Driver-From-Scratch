@@ -1,0 +1,5 @@
+r
+loadfile build/bare_metal.bin 0x08000000
+r
+g
+exit

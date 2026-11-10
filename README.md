@@ -13,8 +13,32 @@ Install GNU Make and the GNU Arm Embedded Toolchain, then run these commands fro
 
 ```sh
 make
-make build/UART_BARE_METAL.hex
+make build/bare_metal.hex
 make size
 ```
 
-The ELF, BIN, HEX, and map outputs are written to `build/`. To remove generated files, run `make clean`. To flash the BIN with `st-flash`, connect the target board and run `make flash`.
+The ELF, BIN, HEX, and map outputs are written to `build/`. To remove generated files, run `make clean`.
+
+## Flashing
+
+Connect the probe to the board before running a flash target.
+
+### J-Link
+
+Run `make flash` (or its alias, `make flash-jlink`) to program the BIN at `0x08000000`, reset the MCU, and start it. The J-Link Commander commands are in `flash.jlink`.
+
+The Makefile defaults to the J-Link installation bundled with STM32CubeIDE on the development machine, device `STM32F401RE`, SWD interface, and a 1 MHz clock. If J-Link is installed elsewhere, override the executable path and, if needed, the device, interface, or speed:
+
+```sh
+make flash JLINK="C:/path/to/JLink.exe" JLINK_DEVICE=STM32F401RE JLINK_IF=SWD JLINK_SPEED=1000
+```
+
+### ST-LINK
+
+Install `st-flash`, connect an ST-LINK probe, and run:
+
+```sh
+make flash-stlink
+```
+
+This target also programs the BIN at `0x08000000` and resets the MCU.

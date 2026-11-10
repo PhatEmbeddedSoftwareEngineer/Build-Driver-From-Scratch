@@ -1,10 +1,14 @@
-TARGET := UART_BARE_METAL
+TARGET := bare_metal
 BUILD_DIR := build
 
 CC := arm-none-eabi-gcc
 CXX := arm-none-eabi-g++
 OBJCOPY := arm-none-eabi-objcopy
 SIZE := arm-none-eabi-size
+JLINK ?= C:/ST/STM32CubeIDE_2.2.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.jlink.win32_2.5.400.202603181158/tools/bin/JLink.exe
+JLINK_DEVICE ?= STM32F401RE
+JLINK_IF ?= SWD
+JLINK_SPEED ?= 1000
 
 CPU_FLAGS := -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 CPPFLAGS := -ICore/Inc
@@ -23,7 +27,7 @@ OBJECTS := $(patsubst %.c,$(BUILD_DIR)/%.o,$(C_SOURCES)) \
 OBJECT_DIRS := $(sort $(BUILD_DIR)/ $(dir $(OBJECTS)))
 DEPENDENCIES := $(OBJECTS:.o=.d)
 
-.PHONY: all build clean flash size
+.PHONY: all build clean flash flash-jlink flash-stlink size
 
 all: build
 
@@ -69,6 +73,11 @@ clean:
 endif
 
 flash: $(BUILD_DIR)/$(TARGET).bin
+	"$(JLINK)" -device $(JLINK_DEVICE) -if $(JLINK_IF) -speed $(JLINK_SPEED) -CommanderScript flash.jlink
+
+flash-jlink: flash
+
+flash-stlink: $(BUILD_DIR)/$(TARGET).bin
 	st-flash --reset write $< 0x08000000
 
 size: $(BUILD_DIR)/$(TARGET).elf
