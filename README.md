@@ -42,3 +42,20 @@ make flash-stlink
 ```
 
 This target also programs the BIN at `0x08000000` and resets the MCU.
+
+## Debugging in VS Code
+
+The workspace includes a Cortex-Debug launch configuration for the STM32F401RE using a J-Link probe. Install the [Cortex-Debug extension](https://marketplace.visualstudio.com/items?itemName=marus25.cortex-debug), GNU Arm Embedded Toolchain, and SEGGER J-Link software. Connect the J-Link probe to the board over SWD.
+
+Open the repository folder in VS Code, then:
+
+1. Build the firmware with `make`, or let the debug configuration run the `Build firmware` task automatically.
+2. Open a source file such as `Core/Src/main.cpp` and click beside a line number to set a breakpoint.
+3. Open **Run and Debug** (`Ctrl+Shift+D`), select **Debug STM32F401RE (J-Link)**, and press `F5`.
+4. The debugger loads `build/bare_metal.elf` and runs to `main()`. Press `F5` again to continue to your breakpoint.
+
+While paused, use `F10` to step over, `F11` to step into, and the Variables, Watch, Call Stack, and Registers views to inspect program state.
+
+The paths to `arm-none-eabi-gdb` and `JLinkGDBServerCL.exe` in `.vscode/launch.json` are specific to the development machine and may need updating if the toolchains are installed elsewhere.
+
+![VS Code paused at a breakpoint while debugging the firmware](docs/images/vscode-debug.png)

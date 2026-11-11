@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug STM32F401RE (J-Link)",
+            "type": "cortex-debug",
+            "request": "launch",
+            "servertype": "jlink",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/bare_metal.elf",
+            "device": "STM32F401RE",
+            "interface": "swd",
+            "gdbPath": "D:/khu Tu Tri/arm-gnu-toolchain-14.3.rel1-mingw-w64-i686-arm-none-eabi/bin/arm-none-eabi-gdb.exe",
+            "serverpath": "C:/ST/STM32CubeIDE_2.2.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.jlink.win32_2.5.400.202603181158/tools/bin/JLinkGDBServerCL.exe",
+            "serverArgs": [
+                "-speed",
+                "1000"
+            ],
+            "runToEntryPoint": "main",
+            "preLaunchTask": "Build firmware"
+        }
+    ]
+}
