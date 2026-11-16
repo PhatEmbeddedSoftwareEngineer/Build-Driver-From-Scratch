@@ -6,7 +6,7 @@ int DriverArmCotexM4::leng = sizeof(message) - 1;
 
 uint8_t DriverArmCotexM4::DriverUART::s_uart1_tx_buf[UART1_TX_BUF_SIZE] = {0};
 uint8_t DriverArmCotexM4::DriverUART::s_uart1_rx_buf[UART1_RX_BUF_SIZE] = {0};
-uint8_t DriverArmCotexM4::DriverUART::s_uart1_dmarx_buf[UART1_DMA_RX_BUF_SIZE] = {0};
+uint8_t DriverArmCotexM4::DriverUART::s_uart1_dmarx_buf[2][UART1_DMA_RX_BUF_SIZE] = {{0}};
 uint8_t DriverArmCotexM4::DriverUART::s_uart1_dmatx_buf[UART1_DMA_TX_BUF_SIZE] = {0};
 
 static inline void spin(volatile uint32_t count) {
@@ -209,11 +209,12 @@ void DriverArmCotexM4::DriverUART::uart_dma2_init_rx(struct uart *uart)
   DMA2->STREAM[5].CR |= BIT(10) ; //  Memory increment mode enable
   DMA2->STREAM[5].CR &= ~ BIT(9) ; // Peripheral increment mode disable
   DMA2->STREAM[5].CR |= BIT(8) ; // enable Circular mode
+  DMA2->STREAM[5].CR |= BIT(3); // Enable half-transfer interrupt
+  DMA2->STREAM[5].CR |= BIT(18); // Enable double-buffer mode
   DMA2->STREAM[5].CR &= ~ BIT(7) ; // direction: 0 = Peripheral to Memory
   DMA2->STREAM[5].CR &= ~ BIT(6) ;
   
   DMA2->STREAM[5].CR |= BIT(4) ;
-  DMA2->STREAM[5].CR |= BIT(3) ; //  Half transfer interrupt enable
 
   DMA2->STREAM[5].FCR = 0x00UL;  // Disable FIFO
 
@@ -221,10 +222,12 @@ void DriverArmCotexM4::DriverUART::uart_dma2_init_rx(struct uart *uart)
     uint8_t uart_id = 0;
     fifo.fifo_register(&s_uart_dev[uart_id].rx_fifo, &s_uart1_rx_buf[0], 
                       sizeof(s_uart1_rx_buf), fifo.fifo_lock, fifo.fifo_unlock);
-    s_uart_dev[uart_id].dmarx_buf = &s_uart1_dmarx_buf[0];
-    s_uart_dev[uart_id].dmarx_buf_size = sizeof(s_uart1_dmarx_buf);
-    DMA2->STREAM[5].M0AR = (uint32_t) s_uart_dev[uart_id].dmarx_buf;  // Memory address
-    DMA2->STREAM[5].NDTR = sizeof(s_uart1_dmarx_buf);  // Number of data items
+    s_uart_dev[uart_id].dmarx_buf[0] = &s_uart1_dmarx_buf[0][0];
+    s_uart_dev[uart_id].dmarx_buf[1] = &s_uart1_dmarx_buf[1][0];
+    s_uart_dev[uart_id].dmarx_buf_size = sizeof(s_uart1_dmarx_buf[0]);
+    DMA2->STREAM[5].M0AR = (uint32_t) s_uart_dev[uart_id].dmarx_buf[0];
+    DMA2->STREAM[5].M1AR = (uint32_t) s_uart_dev[uart_id].dmarx_buf[1];
+    DMA2->STREAM[5].NDTR = s_uart_dev[uart_id].dmarx_buf_size;
     s_uart_dev[uart_id].status  = 0;
   }
 
@@ -353,7 +356,7 @@ int DriverArmCotexM4::cortexm_enable_irq(uint8_t port)
 {
   switch (port) {
     case PORT_UART1:
-        NVIC_Enable(POSITION_USART1, 15);
+        NVIC_Enable(POSITION_USART1, 12);
         return 0;
 
     case PORT_UART2:
@@ -386,26 +389,42 @@ uint16_t DriverArmCotexM4::DriverUART::uart_read(uint8_t uart_id, uint8_t *buf, 
 
 void DriverArmCotexM4::DriverUART::uart_dmarx_done_isr(uint8_t uart_id)
 {
-  uint16_t recv_size;
-  recv_size = s_uart_dev[uart_id].dmarx_buf_size - s_uart_dev[uart_id].last_dmarx_size;
+  uart_device_t *dev = &s_uart_dev[uart_id];
+  uint8_t active_target = (DMA2->STREAM[5].CR & BIT(19)) ? 1 : 0;
+  uint8_t completed_target = active_target ^ 1;
+  uint16_t recv_size = dev->dmarx_buf_size - dev->last_dmarx_size[completed_target];
+
   s_UartTxRxCount[uart_id*2+1] += recv_size;
-  fifo.fifo_write(&s_uart_dev[uart_id].rx_fifo, 
-				   (const uint8_t *)&(s_uart_dev[uart_id].dmarx_buf[s_uart_dev[uart_id].last_dmarx_size]), recv_size);
-  s_uart_dev[uart_id].last_dmarx_size = 0;
+  if (recv_size != 0) {
+    fifo.fifo_write(&dev->rx_fifo,
+                    &dev->dmarx_buf[completed_target][dev->last_dmarx_size[completed_target]],
+                    recv_size);
+  }
+  dev->last_dmarx_size[completed_target] = 0;
 }
 
 void DriverArmCotexM4::DriverUART::uart_dmarx_half_done_isr(uint8_t uart_id)
 {
+  uart_device_t *dev = &s_uart_dev[uart_id];
+  uint8_t isCheckBitCT;
+  uint16_t remain_size;
   uint16_t recv_total_size;
   uint16_t recv_size;
+  const uint16_t half_size = dev->dmarx_buf_size / 2;
 
-  recv_total_size = s_uart_dev[uart_id].dmarx_buf_size - uart1_get_dma2rx_remain_size();
-  recv_size = recv_total_size - s_uart_dev[uart_id].last_dmarx_size;
+  isCheckBitCT = (DMA2->STREAM[5].CR & BIT(19)) ? 1 : 0;
+  remain_size = uart1_get_dma2rx_remain_size();
+
+  recv_total_size = dev->dmarx_buf_size - remain_size;
+  if (recv_total_size > half_size) recv_total_size = half_size;
+  if (recv_total_size <= dev->last_dmarx_size[isCheckBitCT]) return;
+
+  recv_size = recv_total_size - dev->last_dmarx_size[isCheckBitCT];
   s_UartTxRxCount[uart_id*2+1] += recv_size;
-
-  fifo.fifo_write(&s_uart_dev[uart_id].rx_fifo, 
-				   (const uint8_t *)&(s_uart_dev[uart_id].dmarx_buf[s_uart_dev[uart_id].last_dmarx_size]), recv_size);
-  s_uart_dev[uart_id].last_dmarx_size = recv_total_size;
+  fifo.fifo_write(&dev->rx_fifo,
+                  &dev->dmarx_buf[isCheckBitCT][dev->last_dmarx_size[isCheckBitCT]],
+                  recv_size);
+  dev->last_dmarx_size[isCheckBitCT] = recv_total_size;
 }
 
 uint16_t DriverArmCotexM4::DriverUART::uart1_get_dma2rx_remain_size(void)
@@ -415,17 +434,24 @@ uint16_t DriverArmCotexM4::DriverUART::uart1_get_dma2rx_remain_size(void)
 
 void DriverArmCotexM4::DriverUART::uart_dmarx_idle_isr(uint8_t uart_id) 
 {
+  uart_device_t *dev = &s_uart_dev[uart_id];
+  uint8_t isCheckBitCT;
+  uint16_t remain_size;
   uint16_t recv_total_size;
   uint16_t recv_size;
 
-  recv_total_size = s_uart_dev[uart_id].dmarx_buf_size - uart1_get_dma2rx_remain_size();
-  recv_size = recv_total_size - s_uart_dev[uart_id].last_dmarx_size;
+  isCheckBitCT = (DMA2->STREAM[5].CR & BIT(19)) ? 1 : 0;
+  remain_size = uart1_get_dma2rx_remain_size();
+
+  recv_total_size = dev->dmarx_buf_size - remain_size;
+  recv_size = recv_total_size - dev->last_dmarx_size[isCheckBitCT];
   if(recv_size == 0) return;
 
   s_UartTxRxCount[uart_id*2+1] += recv_size;
-  fifo.fifo_write(&s_uart_dev[uart_id].rx_fifo, 
-				   (const uint8_t *)&(s_uart_dev[uart_id].dmarx_buf[s_uart_dev[uart_id].last_dmarx_size]), recv_size);
-  s_uart_dev[uart_id].last_dmarx_size = recv_total_size;
+  fifo.fifo_write(&dev->rx_fifo,
+                  &dev->dmarx_buf[isCheckBitCT][dev->last_dmarx_size[isCheckBitCT]],
+                  recv_size);
+  dev->last_dmarx_size[isCheckBitCT] = recv_total_size;
 }
 
 void DriverArmCotexM4::DriverUART::uart_dmatx_done_isr(uint8_t uart_id)
@@ -447,4 +473,14 @@ void DriverArmCotexM4::DriverUART::uart_poll_dma_tx(uint8_t uart_id)
     s_uart_dev[uart_id].status = 0x01;
     uart_dma2_reTransmit(UART1,(uint32_t)s_uart_dev[uart_id].dmatx_buf, size);
   }
+}
+
+void DriverArmCotexM4::__disable_irq(void)
+{
+    __asm volatile ("cpsid i" ::: "memory");
+}
+
+void DriverArmCotexM4::__enable_irq(void)
+{
+    __asm volatile ("cpsie i" ::: "memory");
 }

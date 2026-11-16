@@ -10,7 +10,7 @@ volatile uint8_t receivedByte = 0;
 volatile uint8_t receivedByteDMA = 0;
 extern "C" void USART1_IRQHandler()
 {
-	static int cnt = 0;  
+	//static int cnt = 0;  
 
     // if(uartPollingMode.uart_read_ready(UART1))  // Check if data is ready to be read
     // {
@@ -75,10 +75,10 @@ extern "C" void DMA2_Stream5_IRQHandler()
         uartPollingMode.uart_dmarx_done_isr(PORT_UART1);
     }
 
-    if(DMA2->HISR & BIT(10))
+    if(DMA2->HISR & BIT(10))  // Check if half-transfer flag is set
     {
+        DMA2->HIFCR = BIT(10);  // Clear half-transfer flag
         uartPollingMode.uart_dmarx_half_done_isr(PORT_UART1);
-        DMA2->HIFCR |= BIT(10);
     }
 
 }

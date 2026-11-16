@@ -37,7 +37,7 @@ namespace DriverArmCotexM4 {
 
     struct uart *const uart_regs_table[MCU_UART_PORTS] = MCU_UART_REGS;
 
-    static int uart_enable_clock(uint8_t port) ;
+    int uart_enable_clock(uint8_t port) ;
 
     int uart_local_open(const devfs_handle_t *handle);
     // RCC register map
@@ -74,7 +74,7 @@ namespace DriverArmCotexM4 {
         }
     };
 
-    static bool timer_expired(uint32_t *t, uint32_t prd, uint32_t now, uint32_t* start) {
+    static inline bool timer_expired(uint32_t *t, uint32_t prd, uint32_t now, uint32_t* start) {
    	
         if (*t == 0) 
         {
@@ -107,15 +107,8 @@ namespace DriverArmCotexM4 {
         nvic_priority->IPRO[position / 4] |= ((priority << 4) << ( (position % 4) * 8 ) );
     }
 
-    inline void __disable_irq(void)
-    {
-        __asm volatile ("cpsid i" ::: "memory");
-    }
-
-    inline void __enable_irq(void)
-    {
-        __asm volatile ("cpsie i" ::: "memory");
-    }
+    void __disable_irq(void);
+    void __enable_irq(void);
     
     int cortexm_enable_irq(uint8_t port);
     class DriverUART { 
@@ -129,16 +122,16 @@ namespace DriverArmCotexM4 {
             uint8_t status;		
             FIFO::_fifo_t tx_fifo;	
             FIFO::_fifo_t rx_fifo;	
-            uint8_t *dmarx_buf;	
+            uint8_t *dmarx_buf[2];
             uint16_t dmarx_buf_size;
             uint8_t *dmatx_buf;	
             uint16_t dmatx_buf_size;
-            uint16_t last_dmarx_size;
+            uint16_t last_dmarx_size[2];
         }uart_device_t;
 
         static uint8_t s_uart1_tx_buf[UART1_TX_BUF_SIZE];
         static uint8_t s_uart1_rx_buf[UART1_RX_BUF_SIZE];
-        static uint8_t s_uart1_dmarx_buf[UART1_DMA_RX_BUF_SIZE] __attribute__((section(".ARM.__at_0x24000000")));
+        static uint8_t s_uart1_dmarx_buf[2][UART1_DMA_RX_BUF_SIZE] __attribute__((section(".ARM.__at_0x24000000")));
         static uint8_t s_uart1_dmatx_buf[UART1_DMA_TX_BUF_SIZE] __attribute__((section(".ARM.__at_0x24000080")));
 
         uart_device_t s_uart_dev[3] = {0}; // uart1, uart2, uart6

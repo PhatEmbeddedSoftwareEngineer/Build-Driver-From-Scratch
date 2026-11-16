@@ -6,8 +6,8 @@
 
 namespace DriverArmCotexM4 {
     class DriverUART;
-    inline void __disable_irq(void);
-    inline void __enable_irq(void); 
+    void __disable_irq(void);
+    void __enable_irq(void); 
 }
 
 class FIFO 

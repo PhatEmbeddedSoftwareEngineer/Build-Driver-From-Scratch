@@ -81,8 +81,7 @@ uint32_t FIFO::fifo_read(_fifo_t *pfifo, uint8_t *pbuf, uint32_t size)
     {
         size = occupy_size;
     }
-    if (pfifo->lock != NULL)
-        pfifo->lock();
+    if (pfifo->lock != NULL) pfifo->lock();
 	r_size = size;
 	while(r_size-- > 0)
 	{
