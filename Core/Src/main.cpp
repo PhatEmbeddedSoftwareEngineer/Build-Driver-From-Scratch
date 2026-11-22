@@ -1,4 +1,5 @@
 #include "Uart.h"
+#include "clock.h"
 DriverArmCotexM4::DriverUART uartPollingMode;
 
 
@@ -106,7 +107,9 @@ void feature_interrupt()
 
 int main(void)  
 {
-	systick_init(16000000 / 1000); // 1ms tick
+    CLOCK_TREE_DRIVER::ClockSource::instance().clocking_HSI();
+
+	systick_init(84000000 / 1000); // 1ms tick
 	uartPollingMode.uart_init(UART1, 115200);
     uartPollingMode.uart_init(UART2, 115200);
     //uartPollingMode.enable_RXEIE(UART1);  // Enable RXEIE Bit to trigger USART1 interrupt

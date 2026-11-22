@@ -127,7 +127,22 @@ void DriverArmCotexM4::DriverUART::uart_init(struct uart *uart, unsigned long ba
   uart->CR1 = 0;                           // Disable this UART
 
   uint32_t buf[2];
-  calBaud(buf, baud, FREQ);
+  if (uart == UART1 ) {
+    calBaud(buf, baud, FREQ_UART1);
+  }
+  else if(uart == UART2)
+  {
+    calBaud(buf, baud, FREQ_UART2);
+  }
+  else if(uart == UART6)
+  {
+    calBaud(buf, baud, FREQ_UART6);
+  }
+  else 
+  {
+    // N/A
+  }
+  
   uart->BRR = buf[0] << 4 | buf[1];  // Set baud rate
   uart->CR1 |= BIT(13) | BIT(2) | BIT(3);  // Set UE, RE, TE
   

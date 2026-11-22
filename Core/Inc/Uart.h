@@ -40,16 +40,6 @@ namespace DriverArmCotexM4 {
     int uart_enable_clock(uint8_t port) ;
 
     int uart_local_open(const devfs_handle_t *handle);
-    // RCC register map
-    struct rcc {
-        volatile uint32_t CR, PLLCFGR, CFGR, CIR, AHB1RSTR, AHB2RSTR, RESERVED[2],
-            APB1RSTR, APB2RSTR, RESERVED1[2], AHB1ENR, AHB2ENR, RESERVED2[2],
-            APB1ENR, APB2ENR, RESERVED3[2], AHB1LPENR, AHB2LPENR,RESERVED4[2],
-            APB1LPENR, APB2LPENR, RESERVED5[2], BDCR, CSR,
-            RESERVED6[2], SSCGR, PLLI2SCFGR, RESERVED7, DCKCFGR;
-    };
-
-
     class GPIO {
 
     public:
@@ -103,7 +93,7 @@ namespace DriverArmCotexM4 {
     {
         struct nvic_setenable *nvic = (struct nvic_setenable *)NVIC_BASE_ADDR;
         struct nvic_setPrio *nvic_priority = (struct nvic_setPrio*)NVIC_PRIORITY_BASE;
-        nvic->ISER[position / 32] |= (1 << (position % 32));
+        nvic->ISER[position / 32] = (1UL << (position % 32));
         nvic_priority->IPRO[position / 4] |= ((priority << 4) << ( (position % 4) * 8 ) );
     }
 

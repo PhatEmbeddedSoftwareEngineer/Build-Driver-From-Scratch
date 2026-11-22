@@ -13,7 +13,7 @@ This project uses a bare-metal, register-level design for the STM32F401RE. Perip
 
 [`Core/Inc/define.h`](Core/Inc/define.h) defines fixed-width types, peripheral base addresses, register layouts, bit/pin helpers, and UART/DMA/NVIC identifiers. The driver accesses RCC, GPIO, USART, DMA, SysTick, and NVIC registers through `volatile` pointers so reads and writes reach the hardware.
 
-The project targets a 16 MHz core clock (`FREQ`). The linker memory map and bare-metal reset/startup flow are described in Chapter 9.
+The internal HSI oscillator is the 16 MHz PLL input (`FREQ`). At startup, the clock driver uses the PLL to raise SYSCLK/HCLK to 84 MHz, the maximum system-clock frequency for the STM32F401RE. The linker memory map and bare-metal reset/startup flow are described in Chapter 10.
 
 **Try it:** inspect USART1's status register through the register map:
 
@@ -26,14 +26,35 @@ if (status & BIT(5)) {
 
 `BIT(n)` creates a mask for bit `n`; `UART1` is the mapped USART1 register block. Prefer the driver APIs in application code unless a chapter is specifically demonstrating direct register access.
 
-### Chapter 2 - SysTick time base
+### Chapter 2 - Clock tree: HSI and PLL
 
-[`systick_init()`](Core/Src/Uart.cpp) configures SysTick to generate an interrupt every 1 ms when called with `16000000 / 1000`. [`SysTick_Handler()`](Core/Src/main.cpp) increments the shared `s_ticks` counter. The `timer_expired()` helper uses that tick count to schedule work; the current application checks for received UART data every 500 ms.
+[`ClockSource::clocking_HSI()`](Core/Src/clock.cpp) keeps HSI as the PLL source and configures PLLM = 8, PLLN = 168, and PLLP = 4. With the STM32F401's 16 MHz HSI:
+
+```text
+PLL input = 16 MHz / 8 = 2 MHz
+VCO       = 2 MHz * 168 = 336 MHz
+SYSCLK    = 336 MHz / 4 = 84 MHz
+```
+
+After the PLL is ready, the clock driver sets APB1's PPRE1 field to `/2` before switching SYSCLK to the PLL. Thus, with HCLK at 84 MHz, PCLK1 is 42 MHz, within the STM32F401 limit. APB2 remains undivided, so PCLK2 is 84 MHz. In `RCC->CFGR`, PPRE1 occupies bits 12:10; the masked assignment clears the field before setting the `/2` encoding.
+
+The application calls this once near the start of `main()`, before initializing SysTick and the USARTs:
+
+```cpp
+CLOCK_TREE_DRIVER::ClockSource::instance().clocking_HSI();
+systick_init(84000000 / 1000);  // 1 ms SysTick at 84 MHz
+```
+
+`FREQ` is the HSI input frequency, not the resulting CPU clock. `FREQ_UART1` and `FREQ_UART6` are set to 84 MHz for the APB2 USARTs; `FREQ_UART2` is set to 42 MHz for the APB1 USART. The baud-rate calculation must use the clock actually reaching each USART.
+
+### Chapter 3 - SysTick time base
+
+[`systick_init()`](Core/Src/Uart.cpp) configures SysTick to generate an interrupt every 1 ms when called with `84000000 / 1000`, matching the configured 84 MHz HCLK. [`SysTick_Handler()`](Core/Src/main.cpp) increments the shared `s_ticks` counter. The `timer_expired()` helper uses that tick count to schedule work; the current application checks for received UART data every 500 ms.
 
 **Try it:** initialize the 1 ms tick once, then poll a 500 ms timer from the main loop:
 
 ```cpp
-systick_init(FREQ / 1000);
+systick_init(84000000 / 1000);
 
 // In the main loop:
 static uint32_t timer = 0;
@@ -46,7 +67,7 @@ if (DriverArmCotexM4::timer_expired(
 
 Do not call `systick_init()` repeatedly inside the loop. `timer_expired()` is also used by the current application in `feature_interrupt()` in [`Core/Src/main.cpp`](Core/Src/main.cpp).
 
-### Chapter 3 - GPIO and alternate functions
+### Chapter 4 - GPIO and alternate functions
 
 The `GPIO` helpers in [`Core/Inc/Uart.h`](Core/Inc/Uart.h) set a pin's mode, select an alternate-function number, and write its output using the GPIO `BSRR` register. UART setup selects the MCU pins and alternate functions required to connect them to each USART:
 
@@ -68,9 +89,9 @@ DriverArmCotexM4::GPIO::gpio_write(led, false); // Set low
 
 Choose a pin that is available on your board and is not being used by another peripheral.
 
-### Chapter 4 - UART operation and polling helpers
+### Chapter 5 - UART operation and polling helpers
 
-[`DriverUART::uart_init()`](Core/Src/Uart.cpp) enables the selected USART clock, configures its TX/RX pins, calculates the baud-rate register value from the 16 MHz clock, and enables the USART, transmitter, and receiver. The application initializes USART1 and USART2 at 115200 baud.
+[`DriverUART::uart_init()`](Core/Src/Uart.cpp) enables the selected USART clock, configures its TX/RX pins, calculates the baud-rate register value from the configured peripheral clock, and enables the USART, transmitter, and receiver. The application initializes USART1 and USART2 at 115200 baud. USART1 is on APB2; USART2 is on APB1, so their baud calculations use different peripheral-clock frequencies.
 
 The driver provides register-level status and byte helpers for checking RX-ready, TX-ready, transmission-complete, and UART IDLE conditions. `uart_write_byte_for_polling()` and `uart_write_buf()` provide blocking transmit helpers. These are driver APIs; the current application's main data path uses DMA rather than polling each byte.
 
@@ -78,6 +99,8 @@ The driver provides register-level status and byte helpers for checking RX-ready
 
 ```cpp
 DriverArmCotexM4::DriverUART uart;
+// Configure the 84 MHz system clock before initializing the USART.
+CLOCK_TREE_DRIVER::ClockSource::instance().clocking_HSI();
 uart.uart_init(UART1, 115200);
 char text[] = "Hello UART\r\n";
 uart.uart_write_buf(UART1, text, sizeof(text) - 1);
@@ -85,7 +108,7 @@ uart.uart_write_buf(UART1, text, sizeof(text) - 1);
 
 `uart_write_buf()` waits for each byte's transmission to complete, so it is simple to test but blocks the caller. Do not initialize another `DriverUART` instance for the DMA application unless that instance also owns the DMA/FIFO setup.
 
-### Chapter 5 - UART and NVIC interrupts
+### Chapter 6 - UART and NVIC interrupts
 
 The driver contains helpers to enable/disable USART RXNE and TXE interrupts and to enable USART IRQs in the NVIC. The vector table in [`Core/Src/main.cpp`](Core/Src/main.cpp) maps USART1 and USART2 to their handlers.
 
@@ -107,7 +130,7 @@ if (uartPollingMode.uart_read_ready(UART1)) {
 
 This is an alternative receive mode, not an extra step for the active DMA receiver. Do not enable RXNE byte handling alongside DMA reception unless the two paths are intentionally coordinated.
 
-### Chapter 6 - DMA reception and transmission
+### Chapter 7 - DMA reception and transmission
 
 The active DMA path uses USART1 with DMA2:
 
@@ -136,7 +159,7 @@ if (queued != 0) {
 
 For receive, the DMA/USART handlers feed the internal RX FIFO; application code retrieves bytes with `uart_read(PORT_UART1, buffer, sizeof(buffer))`. The vector table must point to `DMA2_Stream5_IRQHandler`, `DMA2_Stream7_IRQHandler`, and `USART1_IRQHandler`; the current project already does this. Do not call the ISR callbacks directly from application code.
 
-### Chapter 7 - Application data flow and two USARTs
+### Chapter 8 - Application data flow and two USARTs
 
 The current `main()` initializes USART1 and USART2 at 115200 baud, configures DMA RX/TX for USART1, and then repeatedly checks the RX FIFO. Every 500 ms, if data is available, the application queues the same bytes for USART1 transmission and starts DMA TX. In other words, the active demo is a **USART1 DMA echo**.
 
@@ -168,7 +191,7 @@ while (1) {
 
 This example is mutually exclusive with the active DMA receive setup on USART1. Connect the host to USART1 RX and connect USART2 TX (PA2) to the receiving device's RX, with grounds shared.
 
-### Chapter 8 - FIFO buffering and interrupt safety
+### Chapter 9 - FIFO buffering and interrupt safety
 
 [`FIFO`](Core/Inc/fifo.h) and [`Core/Src/fifo.cpp`](Core/Src/fifo.cpp) implement a fixed-size circular buffer with read/write pointers, occupied/free-size tracking, and optional lock/unlock callbacks. UART DMA callbacks use the FIFOs to decouple data arrival/transmission from application processing. The UART driver supplies critical-section callbacks that disable and re-enable CPU interrupts while updating FIFO data.
 
@@ -198,7 +221,7 @@ if (queued != 0) {
 
 Both `uart_read()` and `uart_write()` return the number of bytes actually transferred to/from the FIFO. Check that count; a FIFO may have fewer bytes available than requested or insufficient free space.
 
-### Chapter 9 - Startup, vector table, and memory layout
+### Chapter 10 - Startup, vector table, and memory layout
 
 The project supplies its own startup code in [`Core/Src/main.cpp`](Core/Src/main.cpp). The reset handler sets the stack pointer, zeros `.bss`, copies initialized `.data` from Flash to RAM, runs global C++ constructors, and calls `main()`. The vector table includes the initial stack pointer, core exceptions, and STM32F401RE peripheral IRQ handlers.
 

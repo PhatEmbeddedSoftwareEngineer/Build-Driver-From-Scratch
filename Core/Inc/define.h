@@ -10,6 +10,10 @@ typedef unsigned int uint32_t;
 #define FALSE 0
 
 #define FREQ 16000000  // CPU frequency, 16 Mhz
+#define FREQ_UART1  84000000  // CPU frequency, 84 Mhz
+#define FREQ_UART6  84000000  // CPU frequency, 84 Mhz
+#define FREQ_UART2 42000000  // CPU frequency, 42 Mhz
+
 #define BIT(x) (1UL << (x))
 #define PIN(bank, num) ((((bank) - 'A') << 8) | (num))
 #define PINNO(pin) (pin & 255)
@@ -45,7 +49,22 @@ struct systick {
 
 #define SYSTICK ((struct systick *) 0xE000E010)  // DUI0553A_cortex_m4_dgug 4.4
 
+// RCC register map
+struct rcc {
+    volatile uint32_t CR, PLLCFGR, CFGR, CIR, AHB1RSTR, AHB2RSTR, RESERVED[2],
+        APB1RSTR, APB2RSTR, RESERVED1[2], AHB1ENR, AHB2ENR, RESERVED2[2],
+        APB1ENR, APB2ENR, RESERVED3[2], AHB1LPENR, AHB2LPENR,RESERVED4[2],
+        APB1LPENR, APB2LPENR, RESERVED5[2], BDCR, CSR,
+        RESERVED6[2], SSCGR, PLLI2SCFGR, RESERVED7, DCKCFGR;
+};
+
+struct flash {
+    volatile uint32_t flash_acr, flash_keyr, flash_optkeyr,
+    flash_sr, flash_cr, flash_optcr;
+};
+
 #define RCC ((struct rcc *) 0x40023800)
+#define FLASH ((struct flash *) 0x40023C00 ) 
 #define GPIO(bank) ((struct gpio *) (0x40020000 + 0x400 * (bank)))
 
 void systick_init(uint32_t ticks) ;
