@@ -10,6 +10,7 @@ namespace CLOCK_TREE_DRIVER
     public:
         static ClockSource& instance();
         void clocking_HSI(void) ; 
+        void clocking_HSE(void);
     private:
         
         ClockSource() = default;

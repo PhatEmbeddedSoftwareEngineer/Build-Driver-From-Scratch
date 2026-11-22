@@ -13,7 +13,7 @@ This project uses a bare-metal, register-level design for the STM32F401RE. Perip
 
 [`Core/Inc/define.h`](Core/Inc/define.h) defines fixed-width types, peripheral base addresses, register layouts, bit/pin helpers, and UART/DMA/NVIC identifiers. The driver accesses RCC, GPIO, USART, DMA, SysTick, and NVIC registers through `volatile` pointers so reads and writes reach the hardware.
 
-The internal HSI oscillator is the 16 MHz PLL input (`FREQ`). At startup, the clock driver uses the PLL to raise SYSCLK/HCLK to 84 MHz, the maximum system-clock frequency for the STM32F401RE. The linker memory map and bare-metal reset/startup flow are described in Chapter 10.
+The clock driver can use either the internal HSI oscillator or an external HSE clock as the PLL input. The active application currently selects HSE and configures SYSCLK/HCLK to 84 MHz, the maximum system-clock frequency for the STM32F401RE. The linker memory map and bare-metal reset/startup flow are described in Chapter 10.
 
 **Try it:** inspect USART1's status register through the register map:
 
@@ -26,26 +26,38 @@ if (status & BIT(5)) {
 
 `BIT(n)` creates a mask for bit `n`; `UART1` is the mapped USART1 register block. Prefer the driver APIs in application code unless a chapter is specifically demonstrating direct register access.
 
-### Chapter 2 - Clock tree: HSI and PLL
+### Chapter 2 - Clock tree: HSI/HSE and PLL
 
-[`ClockSource::clocking_HSI()`](Core/Src/clock.cpp) keeps HSI as the PLL source and configures PLLM = 8, PLLN = 168, and PLLP = 4. With the STM32F401's 16 MHz HSI:
+The clock driver in [`Core/Src/clock.cpp`](Core/Src/clock.cpp) provides two clock-source setups. Both configure the PLL and set APB1's PPRE1 field to `/2` before switching SYSCLK to the PLL. At HCLK = 84 MHz, PCLK1 is 42 MHz (within the STM32F401 limit), while APB2 remains undivided at PCLK2 = 84 MHz.
+
+#### HSI source
+
+[`ClockSource::clocking_HSI()`](Core/Src/clock.cpp) uses the internal 16 MHz HSI oscillator with PLLM = 8, PLLN = 168, and PLLP = 4:
 
 ```text
-PLL input = 16 MHz / 8 = 2 MHz
-VCO       = 2 MHz * 168 = 336 MHz
-SYSCLK    = 336 MHz / 4 = 84 MHz
+PLL input = HSI 16 MHz / PLLM 8 = 2 MHz
+VCO       = 2 MHz * PLLN 168 = 336 MHz
+SYSCLK    = 336 MHz / PLLP 4 = 84 MHz
 ```
 
-After the PLL is ready, the clock driver sets APB1's PPRE1 field to `/2` before switching SYSCLK to the PLL. Thus, with HCLK at 84 MHz, PCLK1 is 42 MHz, within the STM32F401 limit. APB2 remains undivided, so PCLK2 is 84 MHz. In `RCC->CFGR`, PPRE1 occupies bits 12:10; the masked assignment clears the field before setting the `/2` encoding.
+#### HSE source (active configuration)
 
-The application calls this once near the start of `main()`, before initializing SysTick and the USARTs:
+[`ClockSource::clocking_HSE()`](Core/Src/clock.cpp) enables HSE in **bypass mode**, then configures PLLM = 4, PLLN = 168, and PLLP = 4. With an 8 MHz external clock input:
+
+```text
+PLL input = HSE 8 MHz / PLLM 4 = 2 MHz
+VCO       = 2 MHz * PLLN 168 = 336 MHz
+SYSCLK    = 336 MHz / PLLP 4 = 84 MHz
+```
+
+HSE bypass expects a clock signal supplied to the HSE input (for example, an oscillator/MCO output), not a passive crystal by itself. Verify the board's HSE source and frequency: the PLL values above produce 84 MHz only when HSE is 8 MHz. The active `main()` calls `clocking_HSE()` before setting up SysTick and UART:
 
 ```cpp
-CLOCK_TREE_DRIVER::ClockSource::instance().clocking_HSI();
+CLOCK_TREE_DRIVER::ClockSource::instance().clocking_HSE();
 systick_init(84000000 / 1000);  // 1 ms SysTick at 84 MHz
 ```
 
-`FREQ` is the HSI input frequency, not the resulting CPU clock. `FREQ_UART1` and `FREQ_UART6` are set to 84 MHz for the APB2 USARTs; `FREQ_UART2` is set to 42 MHz for the APB1 USART. The baud-rate calculation must use the clock actually reaching each USART.
+In `RCC->CFGR`, PPRE1 occupies bits 12:10; the code clears that field and writes the `/2` encoding before switching SYSCLK to PLL. `FREQ` is the HSI input frequency; `FREQ_UART1` and `FREQ_UART6` represent 84 MHz APB2, while `FREQ_UART2` represents 42 MHz APB1. UART baud calculations must use the clock actually reaching each USART.
 
 ### Chapter 3 - SysTick time base
 
@@ -99,8 +111,8 @@ The driver provides register-level status and byte helpers for checking RX-ready
 
 ```cpp
 DriverArmCotexM4::DriverUART uart;
-// Configure the 84 MHz system clock before initializing the USART.
-CLOCK_TREE_DRIVER::ClockSource::instance().clocking_HSI();
+// Configure the active 84 MHz HSE-based clock tree before initializing the USART.
+CLOCK_TREE_DRIVER::ClockSource::instance().clocking_HSE();
 uart.uart_init(UART1, 115200);
 char text[] = "Hello UART\r\n";
 uart.uart_write_buf(UART1, text, sizeof(text) - 1);

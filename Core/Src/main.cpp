@@ -107,7 +107,7 @@ void feature_interrupt()
 
 int main(void)  
 {
-    CLOCK_TREE_DRIVER::ClockSource::instance().clocking_HSI();
+    CLOCK_TREE_DRIVER::ClockSource::instance().clocking_HSE();
 
 	systick_init(84000000 / 1000); // 1ms tick
 	uartPollingMode.uart_init(UART1, 115200);
